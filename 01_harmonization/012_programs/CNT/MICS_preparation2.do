@@ -124,7 +124,6 @@ replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1
 gen math_recog= 0 
 replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1  
  
- 
 foreach var of varlist math_*  { 
 svy: tab `var',se 
 } 
@@ -149,6 +148,22 @@ replace answer_inferential= 1 if fl21bf==1 & fl21be==1
 replace answer_inferential= 1 if fl22f==1 & fl22e==1   
  
 foreach var of varlist answer_* { 
+svy: tab `var',se 
+} 
+
+ 
+**math scores Kyrgyzstan
+*number discrimination 
+gen math_discrim= 0 
+replace math_discrim= 1 if fl24a=="7" & fl24b=="24" & fl24c=="58" & fl24d=="67" & fl24e=="154"  
+*number addition 
+gen math_addition= 0 
+replace math_addition= 1 if fl25a==5 & fl25b==14 & fl25c==10 & fl25d==19 & fl25e==36  
+*pattern recognition 
+gen math_recog= 0 
+replace math_recog= 1 if fl27a==8 & fl27b==16 & fl27c==30 & fl27d==8 & fl27e==14  
+  
+foreach var of varlist math_*  { 
 svy: tab `var',se 
 } 
 *------------------------------------------------------------------------------- 
