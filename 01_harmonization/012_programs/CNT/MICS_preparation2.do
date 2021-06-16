@@ -1,14 +1,10 @@
 * Purpose of this file: File is to try out code, and give some explanations of hwo MICS can be cleaned well 
 *=========================================================================* 
 /* 
-left: 
-2017:  TGO 
- 
-reading unavailable:  
- 
 Explanation of do file: 
-This is a do file which provides useful code to clean and structure MICS 6 datasets. 
-Note the Excel file which also provides an overview of datasets. 
+-First part provides useful code to clean and structure MICS 6 datasets. Note the Excel file which also provides an overview of datasets. 
+ 
+-Second part is trying of code, e.g. on how to missing variables, which will not be necessary to review. 
 */ 
 *------------------------------------------------------------------------------- 
 *Create directory for MICS 
@@ -57,13 +53,14 @@ save "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M/Data/Stata/`j'_2017_MICS_v01_M", rep
 *Review dataset 
 *------------------------------------------------------------------------------- 
 /* 
-Useful Steps to clean  and review: 
--check if reading score is available (fl*) 
--review survey years (if survey was e.g. conducted 2017-2018 and decide if the majority of interviews was conducted in 2017 or 2018) 
--review grades and adjust (it is uuseful to also check the education system) 
--check that psu= hh1 , stratum==hh7 
--if psu is unavailable use hh1, and if stratum is unavailable use hh6/7 to generate stratum 
+Useful Steps to clean and review (below there is some code which can help for this): 
+1. Load country 
+2. check if reading score is available (fl*) 
+3. review survey years (if survey was e.g. conducted 2017-2018, check if the majority of interviews was conducted in 2017 or 2018) 
+4. review grades and adjust (it is useful to also check the education system) 
+5. if psu is unavailable use hh1, and if stratum is unavailable use hh6/7 to generate stratum 
 */ 
+ 
 * review years 
 tab fs7y 
  
@@ -84,16 +81,80 @@ tab cb5a idgrade
 tab idgrade schage 
 order cb5a cb5b idgrade schage 
  
-*review missing variables 
-svyset [pweight= learner_weight], strata(strata1) psu(su1)  
-replace score_mics_read = 99 if score_mics_read== . 
- 
-svy: tab score_mics_read, se details 
-tab year 
- 
-*review and generate psu and strata1 
+*generate strata1 
 egen stratum2 = group(hh6 hh7) 
  
+*review missing variables for scores 
+svyset [pweight= learner_weight], strata(strata1) psu(su1)  
+replace score_mics_read = 99 if score_mics_read== . 
+svy: tab score_mics_read, se details 
+*------------------------------------------------------------------------------- 
+*Replicate reading and math scores (general) 
+*------------------------------------------------------------------------------- 
+// The data needs to be loaded from the appropriate dataset  
+// This replication differs from some countries: Zimbabwe (reading), 
+ 
+**reading scores 
+svyset [pw=fsweight], strata(stratum) psu(psu) 
+*select children 
+keep if cb3>=7 & cb3<=14 
+keep if fl28==1 
+ 
+*correctly answer three literal questions 
+gen answer_literal = 0 
+replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+svy: tab answer_literal  
+*correctly answer two inferential questions 
+//sometimes the questions are e&f, but they are the same 
+gen answer_inferential = 0 
+replace answer_inferential= 1 if fl22d==1 & fl22e==1   
+ 
+foreach var of varlist answer_* { 
+svy: tab `var',se 
+} 
+ 
+**math scores 
+*number discrimination 
+gen math_discrim= 0 
+replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1  
+*number addition 
+gen math_addition= 0 
+replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
+*pattern recognition 
+gen math_recog= 0 
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1  
+ 
+ 
+foreach var of varlist math_*  { 
+svy: tab `var',se 
+} 
+ 
+*------------------------------------------------------------------------------- 
+*Replicate reading and math scores (country exceptions) 
+*------------------------------------------------------------------------------- 
+**reading scores Zimbabwe 
+svyset [pw=fsweight], strata(stratum) psu(psu) 
+*select children 
+keep if cb3>=7 & cb3<=14 
+keep if fl28==1 
+ 
+*correctly answer three literal questions 
+gen answer_literal = 0 
+replace answer_literal= 1 if  (fl21ba==1 & fl21bb==1 & fl21bc==1) 
+replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+svy: tab answer_literal  
+*correctly answer two inferential questions 
+gen answer_inferential = 0 
+replace answer_inferential= 1 if fl21bf==1 & fl21be==1  
+replace answer_inferential= 1 if fl22f==1 & fl22e==1   
+ 
+foreach var of varlist answer_* { 
+svy: tab `var',se 
+} 
+*------------------------------------------------------------------------------- 
+*------------------------------------------------------------------------------- 
+*TYING OF CODE, ABOVE ALL IMPORTANT IS SUMMARIZED FOR OTHER READERS  
+*------------------------------------------------------------------------------- 
 *------------------------------------------------------------------------------- 
 *Trying of code which is used for countries 
 *------------------------------------------------------------------------------- 
@@ -108,10 +169,17 @@ replace read_comp_score = . if score_FL22A==. & score_FL22B==. & score_FL22C==. 
 gen read_comp_score_pct= read_comp_score/5 
 gen score_mics_read = read_comp_score_pct  
  
-*create highest grade attended 
-gen grade = cb5b 
-replace grade = grade + 9 if cb5a== 3 
-replace grade = grade + 9 if cb5a== 4 
+*create math score 
+	foreach i of var fl24* fl25* fl27* { 
+	gen score_`i' = `i' 
+	replace score_`i' = 0 if `i'>=2 
+	replace score_`i' = . if `i'==. 
+	} 
+	egen math_comp_score =rowtotal(score_fl24a score_fl24b score_fl24c score_fl24d score_fl24e score_fl25a score_fl25b score_fl25c score_fl25d score_fl25e score_fl27a score_fl27b score_fl27c score_fl27d score_fl27e) 
+	replace math_comp_score = . if score_fl24a ==. & score_fl24b ==. &score_fl24c ==. & score_fl24d ==. & score_fl24e ==. & score_fl25a ==. & score_fl25b ==. & score_fl25c ==. & score_fl25d ==. & score_fl25e ==. & score_fl27a ==. & score_fl27b ==. & score_fl27c ==. & score_fl27d ==. & score_fl27e==.  
+	gen math_comp_score_pct= math_comp_score/15 
+ 
+order fl21b* fl22* read_comp_score* score_mics_read fl24* fl25* fl27* math_comp_score* score_mics_math 
 *------------------------------------------------------------------------------- 
 *review when variables are missing through following questionnaire 
 *------------------------------------------------------------------------------- 
@@ -171,7 +239,6 @@ svy: tab `var', se
 *easy way 
 replace score_mics_read = 999 if score_mics_read ==.  
 svy: tab score_mics_read, se  
- 
  
 replace score_mics_read = 0 if score_mics_read== . 
 replace score_mics_read =.z if fl10 == . | fl10 ==2 
@@ -367,3 +434,61 @@ replace foundational_read= 1 if read_correct==1 & answer_inferential==1 & answer
 foreach var of varlist read_correct answer_* foundational* { 
 svy: tab `var',se 
 } 
+*------------------------------------------------------------------------------- 
+*Replicate reading and math scores SUR 
+*------------------------------------------------------------------------------- 
+**reading scores 
+svyset [pw=fsweight], strata(stratum) psu(psu) 
+*select children 
+keep if cb3>=7 & cb3<=14 
+keep if fl28==1 
+*reading correctly 
+gen nr_read_correct= fl20a-fl20b 
+gen read_correct= 0 
+replace read_correct= 1 if nr_read_correct>= 79*0.9  
+replace read_correct = 0 if nr_read_correct==. 
+svy: tab read_correct  
+ 
+//order fs12 fs13 read_correct nr_read* fl20a fl20b fl19w69 fl19wa77 
+*correctly answer three literal questions 
+gen answer_literal = 0 
+replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+replace answer_literal = 0 if fl22a==. | fl22b==. | fl22c==. 
+svy: tab answer_literal  
+*correctly answer two inferential questions 
+gen answer_inferential = 0 
+replace answer_inferential= 1 if fl22d==1 & fl22e==1  
+replace answer_inferential= 0 if fl22d==. | fl22e==.  
+*demonstrate foundational reading skills 
+gen foundational_read = 0 
+replace foundational_read= 1 if read_correct==1 & answer_inferential==1 & answer_literal==1   
+ 
+foreach var of varlist read_correct answer_* foundational* { 
+svy: tab `var',se 
+} 
+**math scores 
+*reading numbers correctly 
+gen math_read= 0 
+replace math_read= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1  
+svy: tab math_read  
+ 
+*number discrimination 
+gen math_discrim= 0 
+replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1  
+ 
+*number addition 
+gen math_addition= 0 
+replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
+ 
+*pattern recognition 
+gen math_recog= 0 
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1  
+ 
+*demonstrate foundational numeracy skills 
+gen foundational_math = 0 
+replace foundational_math= 1 if math_read==1 & math_discrim==1 & math_addition==1  & math_recog==1   
+ 
+foreach var of varlist math_* foundational_math { 
+svy: tab `var',se 
+} 
+ 

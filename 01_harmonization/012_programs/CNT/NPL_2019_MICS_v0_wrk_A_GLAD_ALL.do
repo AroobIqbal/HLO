@@ -190,11 +190,12 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
     // TRAIT Vars:
     local traitvars	"idgrade male age urban school"
 	
-	*<_idgrade_> 
-	gen idgrade = cb5b
-	replace idgrade = idgrade + 6 if cb5a== 21 | cb5a== 20
-	replace idgrade = idgrade + 10 if cb5a== 40 | cb5a== 41 | cb5a== 31 | cb5a== 30
-    *</_idgrade_>
+	*<_idgrade_>  
+	gen idgrade = cb5b 
+	replace idgrade = . if cb5b> 90 
+	label define grade 13 "tertiary" 14 "tertiary" 15 "tertiary" 16 "tertiary" 17 "tertiary" 18 "tertiary" 
+    label var idgrade grade 
+    *</_idgrade_> 
 
 
     *<_age_> 
