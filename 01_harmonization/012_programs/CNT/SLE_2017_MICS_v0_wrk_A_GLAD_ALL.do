@@ -3,7 +3,7 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "TGO"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local region      = "SLE"   /* LAC, SSA, WLD or CNT such as KHM RWA */
 local year        = "2017"  /* 2018 */
 local assessment  = "MICS" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/

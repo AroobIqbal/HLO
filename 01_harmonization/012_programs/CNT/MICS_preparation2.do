@@ -82,7 +82,7 @@ tab idgrade schage
 order cb5a cb5b idgrade schage 
  
 *generate strata1 
-egen stratum2 = group(hh6 hh7) 
+egen stratum = group(hh6 hh7) 
  
 *review missing variables for scores 
 svyset [pweight= learner_weight], strata(strata1) psu(su1)  
@@ -92,25 +92,24 @@ svy: tab score_mics_read, se details
 *Replicate reading and math scores (general) 
 *------------------------------------------------------------------------------- 
 // The data needs to be loaded from the appropriate dataset  
-// This replication differs for some countries: Zimbabwe (reading), 
+// This replication differs for some countries (see below) 
  
-**reading scores 
+**preparation
 svyset [pw=fsweight], strata(stratum) psu(psu) 
 *select children 
 keep if cb3>=7 & cb3<=14 
 keep if fl28==1 
  
+**reading score
 *correctly answer three literal questions 
 gen answer_literal = 0 
 replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
-//replace answer_literal= . if  fl22a==. | fl22b==. | fl22c==.
-
 *correctly answer two inferential questions 
 //sometimes the questions are e&f, but they are the same 
 gen answer_inferential = 0 
 replace answer_inferential= 1 if fl22d==1 & fl22e==1   
  
-foreach var of varlist answer_* { 
+foreach var of varlist answer_* fl22*{ 
 svy: tab `var',se 
 } 
  
@@ -118,15 +117,14 @@ svy: tab `var',se
 *number discrimination 
 gen math_discrim= 0 
 replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 
-//replace math_discrim = . if fl24a==. | fl24b==. | fl24c==.  | fl24d==.  | fl24e==. 
 *number addition 
 gen math_addition= 0 
 replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
 *pattern recognition 
 gen math_recog= 0 
-replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1  
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1   
  
-foreach var of varlist math_*  { 
+foreach var of varlist math* { 
 svy: tab `var',se 
 } 
  
@@ -182,6 +180,33 @@ gen math_recog= 0
 replace math_recog= 1 if fl27a==8 & fl27b==16 & fl27c==30 & fl27d==8 & fl27e==14  
   
 foreach var of varlist math_*  { 
+svy: tab `var',se 
+} 
+
+**preparation SLE
+egen stratum = group(hh6 hh7)
+svyset [pw=fsweight], strata(stratum) psu(hh1)
+*select children
+keep if cb3>=7 & cb3<=14
+keep if fl29==1
+
+**reading scores MDG 
+svyset [pw=fsweight], strata(stratum) psu(psu) 
+*select children 
+keep if cb3>=7 & cb3<=14 
+keep if fl28==1 
+ 
+*correctly answer three literal questions 
+gen answer_literal = 0 
+replace answer_literal= 1 if  (fl122a==1 & fl122b==1 & fl122c==1) 
+replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+svy: tab answer_literal  
+*correctly answer two inferential questions 
+gen answer_inferential = 0 
+replace answer_inferential= 1 if fl122f==1 & fl122e==1 
+replace answer_inferential= 1 if fl22f==1 & fl22e==1   
+ 
+foreach var of varlist answer_* { 
 svy: tab `var',se 
 } 
 *------------------------------------------------------------------------------- 
