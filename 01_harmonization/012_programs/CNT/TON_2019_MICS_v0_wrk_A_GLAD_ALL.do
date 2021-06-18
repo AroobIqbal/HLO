@@ -157,19 +157,19 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_mics* "
 
+    *<_score_assessment_reading> 
+	foreach i in fl21ba fl21bb fl21bc fl21bf fl21be{ 
+	gen score_`i' = `i' 
+	replace score_`i' = 0 if `i'>=2 
+	replace score_`i' = . if `i'==. 
+	} 
+	egen read_comp_score =rowtotal(score_fl21ba score_fl21bb score_fl21bc score_fl21bf score_fl21be) 
+	replace read_comp_score = . if score_fl21ba==. & score_fl21bb==. & score_fl21bc==. & score_fl21bf==. & score_fl21be==. 
+	gen read_comp_score_pct= read_comp_score/5 
+ 
+	 clonevar score_mics_read = read_comp_score_pct  
+     label var score_mics_read "Percentage of correct reading comprehension questions for `assessment' (out of 5)" 
     *</_score_assessment_reading> 
-	foreach i in fl22a fl22b fl22c fl22f fl22e{
-	gen score_`i' = `i'
-	replace score_`i' = 0 if `i'>=2
-	replace score_`i' = . if `i'==.
-	}
-	egen read_comp_score =rowtotal(fl21ba fl21bb fl21bc fl21be fl21bf)
-	replace read_comp_score = . if score_fl21ba==. & score_fl21bb==. & score_fl21bc==. & score_fl21be==. & score_fl21bf==.
-	gen read_comp_score_pct= read_comp_score/5
-
-	clonevar score_mics_read = read_comp_score_pct 
-     label var score_mics_read "Percentage of correct reading comprehension questions for `assessment' (out of 5)"
-     *</_score_assessment_reading> 
  
 	*</_score_assessment_math> 
 		foreach i of var fl24* fl25* fl27* { 

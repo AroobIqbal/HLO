@@ -88,6 +88,7 @@ egen stratum = group(hh6 hh7)
 svyset [pweight= learner_weight], strata(strata1) psu(su1)  
 replace score_mics_read = 99 if score_mics_read== . 
 svy: tab score_mics_read, se details 
+order score_mics_read* fl22* score_mics_math* fl24* fl25* fl27*
 *------------------------------------------------------------------------------- 
 *Replicate reading and math scores (general) 
 *------------------------------------------------------------------------------- 
@@ -124,7 +125,7 @@ replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1
 gen math_recog= 0 
 replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1   
  
-foreach var of varlist math* { 
+foreach var of varlist fl25* fl27* math* { 
 svy: tab `var',se 
 } 
  
@@ -132,11 +133,6 @@ svy: tab `var',se
 *Replicate reading and math scores (country exceptions) 
 *------------------------------------------------------------------------------- 
 **reading scores Zimbabwe 
-svyset [pw=fsweight], strata(stratum) psu(psu) 
-*select children 
-keep if cb3>=7 & cb3<=14 
-keep if fl28==1 
- 
 *correctly answer three literal questions 
 gen answer_literal = 0 
 replace answer_literal= 1 if  (fl21ba==1 & fl21bb==1 & fl21bc==1) 
@@ -190,21 +186,21 @@ svyset [pw=fsweight], strata(stratum) psu(hh1)
 keep if cb3>=7 & cb3<=14
 keep if fl29==1
 
-**reading scores MDG 
+**reading scores MDG /LSO
 svyset [pw=fsweight], strata(stratum) psu(psu) 
 *select children 
 keep if cb3>=7 & cb3<=14 
-keep if fl28==1 
- 
+keep if fl28==1
 *correctly answer three literal questions 
 gen answer_literal = 0 
 replace answer_literal= 1 if  (fl122a==1 & fl122b==1 & fl122c==1) 
-replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
-svy: tab answer_literal  
+replace answer_literal= 1 if  (fl222a==1 & fl222b==1 & fl222c==1)  
+replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1)  
 *correctly answer two inferential questions 
 gen answer_inferential = 0 
-replace answer_inferential= 1 if fl122f==1 & fl122e==1 
-replace answer_inferential= 1 if fl22f==1 & fl22e==1   
+replace answer_inferential= 1 if fl122d==1 & fl122e==1 
+replace answer_inferential= 1 if fl222d==1 & fl222e==1  
+replace answer_inferential= 1 if fl22d==1 & fl22e==1  
  
 foreach var of varlist answer_* { 
 svy: tab `var',se 
