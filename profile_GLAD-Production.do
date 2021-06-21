@@ -64,7 +64,7 @@
   }
   * Katharina
   else if inlist("`c(username)'","wb576431","WB576431") {
-    global clone "\GDB\Personal\WB576431\HLO3"
+    global clone "\GDB\Personal\WB576431\HLO"
   }
 
 
