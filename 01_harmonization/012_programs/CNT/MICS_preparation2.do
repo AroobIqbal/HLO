@@ -74,11 +74,14 @@ tab cb5b schage
 replace idgrade = idgrade + 9 if cb5a== 3 
 replace idgrade = idgrade + 12 if cb5a== 4 | cb5a== 5 | cb5a== 6 
 label define grade 13 "tertiary" 14 "tertiary" 15 "tertiary" 16 "tertiary" 17 "tertiary" 18 "tertiary" 
-label var idgrade grade 
+label val idgrade grade
+label var idgrade "Grade" 
 replace idgrade = . if  cb5b>90 
 	 
 tab cb5a idgrade 
+//it is important to check the combination of idgrade and schage, because in some cases children are 5 years old and are supposed to be in grade secondary school. I replace those with . 
 tab idgrade schage 
+replace idgrade = . if idgrade>= 10 & schage<=7
 order cb5a cb5b idgrade schage 
  
 *generate stratum 

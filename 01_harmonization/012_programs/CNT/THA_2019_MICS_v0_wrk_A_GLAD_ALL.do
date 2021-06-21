@@ -199,22 +199,22 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	*<clean score_assessment_subject>* 
 	
 	*<official_score_assessment_reading>  
-	 gen read_official_literal = 0
-	 replace read_official_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
-	 replace read_official_literal=. if cb3<7 & cb3>14 
-	 replace read_official_literal=. if fl28!=1 
+	 gen score_mics_read_literal = 0
+	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+	 replace score_mics_read_literal=. if cb3<7 & cb3>14 
+	 replace score_mics_read_literal=. if fl28!=1 
 	 
-	 gen read_official_inferential = 0 
-	 replace read_official_inferential= 1 if fl22d==1 & fl22e==1 
-	 replace read_official_inferential=. if cb3<7 & cb3>14  
-	 replace read_official_inferential=. if fl28!=1  
+	 gen score_mics_read_inferential = 0 
+	 replace score_mics_read_inferential= 1 if fl22d==1 & fl22e==1 
+	 replace score_mics_read_inferential=. if cb3<7 & cb3>14  
+	 replace score_mics_read_inferential=. if fl28!=1  
  	 *<official_score_assessment_reading>  
 	
 	*<official_score_assessment_math>  
-	 gen score_mics_math_official_foundational = 0
-	 replace score_mics_math_official_foundational= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 & fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 
-	 replace score_mics_math_official_foundational=. if cb3<7 & cb3>14 
-	 replace score_mics_math_official_foundational=. if fl28!=1 
+	 gen score_mics_math_foundational = 0
+	 replace score_mics_math_foundational= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 & fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 
+	 replace score_mics_math_foundational=. if cb3<7 & cb3>14 
+	 replace score_mics_math_foundational=. if fl28!=1 
  	 *<official_score_assessment_math>
 
     // TRAIT Vars:
@@ -223,7 +223,8 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	*<_idgrade_> 
 	gen idgrade = cb5b
 	replace idgrade = idgrade + 6 if cb5a==2
-	replace idgrade = idgrade + 9 if cb5a==3 | cb5a==4
+	replace idgrade = idgrade + 6 if cb5a==3 
+	replace idgrade = idgrade + 12 if cb5a==4
 	replace idgrade = . if cb5b > 90
     *</_idgrade_>
 
