@@ -81,7 +81,7 @@ tab cb5a idgrade
 tab idgrade schage 
 order cb5a cb5b idgrade schage 
  
-*generate strata1 
+*generate stratum 
 egen stratum = group(hh6 hh7) 
  
 *review missing variables for scores 
@@ -115,6 +115,7 @@ svy: tab `var',se
 } 
  
 **math scores 
+* number reading
 *number discrimination 
 gen math_discrim= 0 
 replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 
@@ -128,7 +129,6 @@ replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1
 foreach var of varlist fl25* fl27* math* { 
 svy: tab `var',se 
 } 
- 
 *------------------------------------------------------------------------------- 
 *Replicate reading and math scores (country exceptions) 
 *------------------------------------------------------------------------------- 
