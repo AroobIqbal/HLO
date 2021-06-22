@@ -13,9 +13,9 @@ set sortseed 10051990
 
 	clear
 
-	save "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.txt" , emptyok replace
+	save "$output\WLD_All_MICS_v01_M_v01_A_MEAN.txt" , emptyok replace
 			
-	file open myfile using "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.txt", write replace
+	file open myfile using "$output\WLD_All_MICS_v01_M_v01_A_MEAN.txt", write replace
 
 	file write myfile "countrycode" _tab "year"  _tab "indicator" _tab "value" _tab "se" _tab "n" _n /*header */
 			
@@ -90,12 +90,12 @@ foreach c of local country {
 									*Setting survey structure
 									if !inlist("`c'","KGZ","SLE","SUR","TUN") {
 									
-										svyset psu [pweight = fsweight], strata(stratum)
+										svyset [pweight= learner_weight], strata(strata1) psu(su1)
 
 										svy: mean `indicator'`sub'`trait'`lv' 
 									}
 									
-									if inlist("`c'","KGZ") {
+	/*								if inlist("`c'","KGZ") {
 								
 
 										 mean `indicator'`sub'`trait'`lv' [pweight = fsweight]
@@ -106,7 +106,7 @@ foreach c of local country {
 
 										 svyset  [pweight = fsweight], strata(stratum)
 										 svy: mean `indicator'`sub'`trait'`lv' 
-									}
+									} */
 									
 									if _rc == 0 {
 
@@ -117,7 +117,7 @@ foreach c of local country {
 										local  se_`indicator'`sub'`label' = sqrt(pv_var[1,1])
 										local  n_`indicator'`sub'`label'  = e(N)
 													
-										file open myfile   using	 "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.txt", write append			
+										file open myfile   using	 "$output\WLD_All_MICS_v01_M_v01_A_MEAN.txt", write append			
 
 										file write myfile "`c'" _tab "`y'" _tab "`indicator'`sub'`label'" _tab "`m_`indicator'`sub'`label''" _tab "`se_`indicator'`sub'`label''" _tab  "`n_`indicator'`sub'`label''"  _n
 
@@ -134,8 +134,8 @@ foreach c of local country {
 	restore
 }
 		
-insheet using "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.txt", clear names
+insheet using "$output\WLD_All_MICS_v01_M_v01_A_MEAN.txt", clear names
 gen test = "MICS"
-cf _all using "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.dta", verbose
-save "${clone}/01_harmonization/013_outputs\WLD_All_MICS_v01_M_v01_A_MEAN.dta", replace
+*cf _all using "$output\WLD_All_MICS_v01_M_v01_A_MEAN.dta", verbose
+save "$output\WLD_All_MICS_v01_M_v01_A_MEAN.dta", replace
 
