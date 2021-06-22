@@ -222,6 +222,7 @@ local dofile_info = "last modified by Katharina Ziegler, 28.4.2021"  /* change d
 	
 	*<_idgrade_> 
 	gen idgrade = cb5b
+	label var idgrade "Grade"
     *</_idgrade_>
 
 

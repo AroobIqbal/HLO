@@ -230,6 +230,7 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	replace idgrade = 14 if cb5a==7
 	label define idgrade 14 "tertiary/university"
 	label val idgrade idgrade
+	label var idgrade "Grade"
     *</_idgrade_>
 
     *<_age_> 

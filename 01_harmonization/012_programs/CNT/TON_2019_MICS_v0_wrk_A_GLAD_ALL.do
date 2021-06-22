@@ -229,6 +229,7 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	label define idgrade 14 "tertiary/university"
 	label val idgrade idgrade
 	replace idgrade = . if cb5b > 90
+	label var idgrade "Grade"
     *</_idgrade_>
 
 

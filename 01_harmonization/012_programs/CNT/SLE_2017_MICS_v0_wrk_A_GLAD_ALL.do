@@ -229,6 +229,7 @@ local dofile_info = "last modified by Katharina Ziegler, 11.6.2021"  /* change d
 *	label define grade 13 "tertiary" 14 "tertiary" 15 "tertiary" 16 "tertiary" 17 "tertiary" 18 "tertiary"
 * label var idgrade grade
 	replace idgrade = . if  cb5b>90	
+	label var idgrade "Grade"
     *</_idgrade_>
 
 

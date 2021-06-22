@@ -224,6 +224,7 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	clonevar idgrade = cb5b
 	replace idgrade = cb5b+6 if cb5a== 2
 	replace idgrade = . if cb5b>90
+	label var idgrade "Grade"
     *</_idgrade_>
 
 

@@ -227,6 +227,7 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	replace idgrade = . if schage ==5 & idgrade==13
 	replace idgrade = . if schage ==4 & idgrade==10
 	replace idgrade = . if schage ==5 & idgrade==8
+	label var idgrade "Grade"
     *</_idgrade_>
 
 

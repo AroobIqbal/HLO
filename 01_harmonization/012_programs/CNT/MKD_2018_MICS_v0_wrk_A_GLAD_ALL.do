@@ -156,7 +156,7 @@ local dofile_info = "last modified by Katharina Ziegler, 28.4.2021"  /* change d
 
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local valuevars	"score_mics* score_mics_read_official* score_mics_math_official*"
+    local valuevars	"score_mics* "
 
     *<_score_assessment_reading> 
 	foreach i in fl22a fl22b fl22c fl22d fl22e{ 
@@ -224,6 +224,7 @@ local dofile_info = "last modified by Katharina Ziegler, 28.4.2021"  /* change d
 	*<_idgrade_> 
 	gen idgrade = cb5b
 	replace idgrade = idgrade + 9 if cb5a== 4 | cb5a== 3
+	label var idgrade "Grade"
     *</_idgrade_>
 
 
