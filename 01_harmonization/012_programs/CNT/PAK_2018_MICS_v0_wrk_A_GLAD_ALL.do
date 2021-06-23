@@ -220,7 +220,13 @@ local dofile_info = "last modified by Katharina Ziegler, 11.6.2021"  /* change d
  	 *<official_score_assessment_math>
 	
     // TRAIT Vars:
-    local traitvars	"idgrade male age urban school"
+     local traitvars	"idgrade male age urban school total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 	
 	*<_idgrade_> 
 	gen idgrade = cb5b

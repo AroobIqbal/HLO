@@ -49,6 +49,31 @@ foreach j in `cnt' {
 import spss "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M\Data\Original\fs", clear 
 save "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M/Data/Stata/`j'_2017_MICS_v01_M", replace 
 } 
+
+*------------------------------------------------------------------------------- 
+*Running do files
+*-------------------------------------------------------------------------------
+use "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta",  clear
+keep if assessment== "MICS"
+
+levelsof countrycode, local(country)
+
+local subject read read_literal read_inferential math math_foundational
+local traitvars total 
+
+
+foreach c of local country {
+display "`c'"
+	preserve
+	keep if countrycode == "`c'" 
+	display "`c'"
+	levelsof year, local(yr)
+		foreach y of local yr {
+		*display "`c'" "`y'"
+		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_MICS_v0_wrk_A_GLAD_ALL"
+		}
+	restore
+	}	
 *------------------------------------------------------------------------------- 
 *Review dataset 
 *------------------------------------------------------------------------------- 
