@@ -13,7 +13,7 @@ local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no n
 local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change date*/
 *
 * Steps:
-* 0) Program setup (identical for all assessments)
+* 0) Program setup (identical for all assessments)fmat
 * 1) Open all rawdata, lower case vars, save in temp_dir
 * 2) Combine all rawdata into a single file (merge and append)
 * 3) Standardize variable names across all assessments
@@ -200,12 +200,12 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	
 	*<official_score_assessment_reading>  
 	 gen score_mics_read_literal = 0
-	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+	 replace score_mics_read_literal= 1 if  (fl21ba==1 & fl21bb==1 & fl21bc==1) 
 	 replace score_mics_read_literal=. if cb3<7 & cb3>14 
 	 replace score_mics_read_literal=. if fl28!=1 
 	 
 	 gen score_mics_read_inferential = 0 
-	 replace score_mics_read_inferential= 1 if fl22f==1 & fl22e==1 
+	 replace score_mics_read_inferential= 1 if fl21bf==1 & fl21be==1 
 	 replace score_mics_read_inferential=. if cb3<7 & cb3>14  
 	 replace score_mics_read_inferential=. if fl28!=1  
  	 *<official_score_assessment_reading>  

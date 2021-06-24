@@ -203,15 +203,18 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	//replacing children who drop out because of age, consent or language reasons as ".z" and missing children who failed the reading practice or did not finish reading the story as 0 
 	*<clean score_assessment_subject>* 
 	
-		
 	 *<official_score_assessment_reading>  
 	 gen score_mics_read_literal = 0
 	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+	 replace score_mics_read_literal= 1 if  (fl122a==1 & fl122b==1 & fl122c==1)
+	 replace score_mics_read_literal= 1 if  (fl222a==1 & fl222b==1 & fl222c==1)
 	 replace score_mics_read_literal=. if cb3<7 & cb3>14 
 	 replace score_mics_read_literal=. if fl28!=1 
 	 
 	 gen score_mics_read_inferential = 0 
-	 replace score_mics_read_inferential= 1 if fl22d==1 & fl22e==1 
+	 replace score_mics_read_inferential= 1 if fl22d==1 & fl22e==1
+	 replace score_mics_read_inferential= 1 if fl122d==1 & fl122e==1
+	 replace score_mics_read_inferential= 1 if fl222d==1 & fl222e==1 
 	 replace score_mics_read_inferential=. if cb3<7 & cb3>14  
 	 replace score_mics_read_inferential=. if fl28!=1  
  	 *<official_score_assessment_reading>  
