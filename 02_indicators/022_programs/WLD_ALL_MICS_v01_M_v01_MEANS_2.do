@@ -119,3 +119,6 @@ gen test = "MICS"
 *cf _all using "$output\WLD_All_MICS_v01_M_v01_A_MEAN.dta", verbose
 save "$output\WLD_All_MICS_v01_M_v01_A_MEAN.dta", replace
 
+use "$output\WLD_All_MICS_v01_M_v01_A_MEAN.dta", replace
+export excel using "$output\WLD_All_MICS_v01_M_v01_A_MEAN", replace
+
