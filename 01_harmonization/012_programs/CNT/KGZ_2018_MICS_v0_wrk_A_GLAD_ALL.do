@@ -172,17 +172,38 @@ local dofile_info = "last modified by Katharina Ziegler, 28.4.2021"  /* change d
     *</_score_assessment_reading> 
  
 	*</_score_assessment_math> 
-		foreach i of var fl24* fl25* fl27* { 
-	gen score_`i' = `i' 
-	replace score_`i' = 0 if `i'>=2 
-	replace score_`i' = . if `i'==. 
+	foreach i of var fl24*  {
+	gen score_`i' = 0 
+	replace score_`i' = . if `i'== ""
 	} 
+	foreach i of var fl25* fl27* {
+	gen score_`i' = 0 
+	replace score_`i' = . if `i'== . 
+	} 
+	replace score_fl24a=1 if fl24a==  "7"
+	replace score_fl24b=1 if fl24b==  "24"
+	replace score_fl24c=1 if fl24c==  "58"
+	replace score_fl24d=1 if fl24d==  "67"
+	replace score_fl24e=1 if fl24e==  "154"
+	replace score_fl25a=1 if fl25a==  5
+	replace score_fl25b=1 if fl25b==  14
+	replace score_fl25c=1 if fl25c==  10
+	replace score_fl25d=1 if fl25d==  19
+	replace score_fl25e=1 if fl25e==  36
+	replace score_fl27a=1 if fl27a==  8
+	replace score_fl27b=1 if fl27b==  16
+	replace score_fl27c=1 if fl27c==  30
+	replace score_fl27d=1 if fl27d==  8
+	replace score_fl27e=1 if fl27e==  14
+
 	egen math_comp_score =rowtotal(score_fl24a score_fl24b score_fl24c score_fl24d score_fl24e score_fl25a score_fl25b score_fl25c score_fl25d score_fl25e score_fl27a score_fl27b score_fl27c score_fl27d score_fl27e) 
 	replace math_comp_score = . if score_fl24a ==. & score_fl24b ==. &score_fl24c ==. & score_fl24d ==. & score_fl24e ==. & score_fl25a ==. & score_fl25b ==. & score_fl25c ==. & score_fl25d ==. & score_fl25e ==. & score_fl27a ==. & score_fl27b ==. & score_fl27c ==. & score_fl27d ==. & score_fl27e==.  
 	gen math_comp_score_pct= math_comp_score/15 
 	 
 	 clonevar score_mics_math = math_comp_score_pct  
      label var score_mics_math "Percentage of correct math comprehension questions for `assessment' (out of 15)" 
+	 order fl24* score_fl24* fl25* score_fl25* fl27* score_fl27* fl22* score_fl22*
+	  order score_fl24* score_fl25* score_fl27* score_mics_math score_fl22* score_mics_read
 	*</_score_assessment_math> 
 	 
 	*<clean score_assessment_subject> 
@@ -198,12 +219,41 @@ local dofile_info = "last modified by Katharina Ziegler, 28.4.2021"  /* change d
 	//replacing children who drop out because of age, consent or language reasons as ".z" and missing children who failed the reading practice or did not finish reading the story as 0 
 	*<clean score_assessment_subject>* 
 	
+	*<official_score_assessment_reading>  
+	 gen score_mics_read_literal = 0
+	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+	 replace score_mics_read_literal=. if cb3<7 | cb3>14 
+	 replace score_mics_read_literal=. if fl28!=1 
+	 
+	 gen score_mics_read_inferential = 0 
+	 replace score_mics_read_inferential= 1 if fl22d==1 & fl22e==1 
+	 replace score_mics_read_inferential=. if cb3<7 | cb3>14  
+	 replace score_mics_read_inferential=. if fl28!=1  
+ 	 *<official_score_assessment_reading>  
+	
+	*<official_score_assessment_math> 
+	 gen score_mics_math_foundational = 0
+	 replace score_mics_math_foundational= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1 & fl24a=="7" & fl24b=="24" & fl24c=="58" & fl24d=="67" & fl24e=="154" & fl25a==5 & fl25b==14 & fl25c==10 & fl25d==19 & fl25e==36  & fl27a==8 & fl27b==16 & fl27c==30 & fl27d==8 & fl27e==14 
+	 replace score_mics_math_foundational=. if cb3<7 | cb3>14 
+	 replace score_mics_math_foundational=. if fl28!=1 
+ 	 *<official_score_assessment_math>
+	
     // TRAIT Vars:
-    local traitvars	"idgrade male age urban school"
+     local traitvars	"idgrade male age urban school total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 	
 	*<_idgrade_> 
 	gen idgrade = cb5b
-	replace idgrade = idgrade + 11 if cb5a== 4 | cb5a== 5 
+	replace idgrade = idgrade + 10 if cb5a== 4  
+	replace idgrade = idgrade + 14 if cb5a== 5 	
+	label define grade 15 "tertiary" 16 "tertiary" 17 "tertiary" 18 "tertiary" 
+	label val idgrade grade
+	label var idgrade "Grade" 
     *</_idgrade_>
 
 

@@ -49,6 +49,31 @@ foreach j in `cnt' {
 import spss "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M\Data\Original\fs", clear 
 save "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M/Data/Stata/`j'_2017_MICS_v01_M", replace 
 } 
+
+*------------------------------------------------------------------------------- 
+*Running do files
+*-------------------------------------------------------------------------------
+use "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta",  clear
+keep if assessment== "MICS"
+
+levelsof countrycode, local(country)
+
+local subject read read_literal read_inferential math math_foundational
+local traitvars total 
+
+
+foreach c of local country {
+display "`c'"
+	preserve
+	keep if countrycode == "`c'" 
+	display "`c'"
+	levelsof year, local(yr)
+		foreach y of local yr {
+		*display "`c'" "`y'"
+		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_MICS_v0_wrk_A_GLAD_ALL"
+		}
+	restore
+	}	
 *------------------------------------------------------------------------------- 
 *Review dataset 
 *------------------------------------------------------------------------------- 
@@ -74,14 +99,17 @@ tab cb5b schage
 replace idgrade = idgrade + 9 if cb5a== 3 
 replace idgrade = idgrade + 12 if cb5a== 4 | cb5a== 5 | cb5a== 6 
 label define grade 13 "tertiary" 14 "tertiary" 15 "tertiary" 16 "tertiary" 17 "tertiary" 18 "tertiary" 
-label var idgrade grade 
+label val idgrade grade
+label var idgrade "Grade" 
 replace idgrade = . if  cb5b>90 
 	 
 tab cb5a idgrade 
+//it is important to check the combination of idgrade and schage, because in some cases children are 5 years old and are supposed to be in grade secondary school. I replace those with . 
 tab idgrade schage 
+replace idgrade = . if idgrade>= 10 & schage<=7
 order cb5a cb5b idgrade schage 
  
-*generate strata1 
+*generate stratum 
 egen stratum = group(hh6 hh7) 
  
 *review missing variables for scores 
@@ -104,17 +132,18 @@ keep if fl28==1
 **reading score
 *correctly answer three literal questions 
 gen answer_literal = 0 
-replace answer_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+replace answer_literal= 1 if  fl22a==1 & fl22b==1 & fl22c==1 
 *correctly answer two inferential questions 
 //sometimes the questions are e&f, but they are the same 
 gen answer_inferential = 0 
 replace answer_inferential= 1 if fl22d==1 & fl22e==1   
  
-foreach var of varlist answer_* fl22*{ 
+foreach var of varlist answer_*{ 
 svy: tab `var',se 
 } 
  
 **math scores 
+* number reading
 *number discrimination 
 gen math_discrim= 0 
 replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 
@@ -123,12 +152,18 @@ gen math_addition= 0
 replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
 *pattern recognition 
 gen math_recog= 0 
-replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1   
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1
+*math foundational
+gen math_foun=0
+replace math_foun= 1 if  fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 &  fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 
  
-foreach var of varlist fl25* fl27* math* { 
+foreach var of varlist math* { 
 svy: tab `var',se 
 } 
- 
+
+foreach var of varlist score_mics_* {
+	svy: mean `var'
+}
 *------------------------------------------------------------------------------- 
 *Replicate reading and math scores (country exceptions) 
 *------------------------------------------------------------------------------- 
@@ -205,6 +240,8 @@ replace answer_inferential= 1 if fl22d==1 & fl22e==1
 foreach var of varlist answer_* { 
 svy: tab `var',se 
 } 
+
+
 *------------------------------------------------------------------------------- 
 *------------------------------------------------------------------------------- 
 *TYING OF CODE, ABOVE ALL IMPORTANT IS SUMMARIZED FOR OTHER READERS  

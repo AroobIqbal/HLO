@@ -1,4 +1,4 @@
-s*=========================================================================*
+*=========================================================================*
 * GLOBAL LEARNING ASSESSMENT DATABASE (GLAD)
 * Project information at: https://github.com/worldbank/GLAD
 *

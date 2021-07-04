@@ -157,44 +157,83 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_mics* "
 
-    *<_score_assessment_subject_pv_>
-	foreach i in fl22a fl22b fl22c fl22d fl22e{
-	gen score_`i' = `i'
-	replace score_`i' = 0 if `i'>=2
-	replace score_`i' = . if `i'==.
-	}
-	egen read_comp_score =rowtotal(score_fl22a score_fl22b score_fl22c score_fl22d score_fl22e)
-	replace read_comp_score = . if score_fl22a==. & score_fl22b==. & score_fl22c==. & score_fl22d==. & score_fl22e==.
-	gen read_comp_score_pct= read_comp_score/5
+     *<_score_assessment_reading> 
+	foreach i in fl22a fl22b fl22c fl22d fl22e{ 
+	gen score_`i' = `i' 
+	replace score_`i' = 0 if `i'>=2 
+	replace score_`i' = . if `i'==. 
+	} 
+	egen read_comp_score =rowtotal(score_fl22a score_fl22b score_fl22c score_fl22d score_fl22e) 
+	replace read_comp_score = . if score_fl22a==. & score_fl22b==. & score_fl22c==. & score_fl22d==. & score_fl22e==. 
+	gen read_comp_score_pct= read_comp_score/5 
+ 
+	 clonevar score_mics_read = read_comp_score_pct  
+     label var score_mics_read "Percentage of correct reading comprehension questions for `assessment' (out of 5)" 
+    *</_score_assessment_reading> 
+ 
+	*</_score_assessment_math> 
+		foreach i of var fl24* fl25* fl27* { 
+	gen score_`i' = `i' 
+	replace score_`i' = 0 if `i'>=2 
+	replace score_`i' = . if `i'==. 
+	} 
+	egen math_comp_score =rowtotal(score_fl24a score_fl24b score_fl24c score_fl24d score_fl24e score_fl25a score_fl25b score_fl25c score_fl25d score_fl25e score_fl27a score_fl27b score_fl27c score_fl27d score_fl27e) 
+	replace math_comp_score = . if score_fl24a ==. & score_fl24b ==. &score_fl24c ==. & score_fl24d ==. & score_fl24e ==. & score_fl25a ==. & score_fl25b ==. & score_fl25c ==. & score_fl25d ==. & score_fl25e ==. & score_fl27a ==. & score_fl27b ==. & score_fl27c ==. & score_fl27d ==. & score_fl27e==.  
+	gen math_comp_score_pct= math_comp_score/15 
+	 
+	 clonevar score_mics_math = math_comp_score_pct  
+     label var score_mics_math "Percentage of correct math comprehension questions for `assessment' (out of 15)" 
+	*</_score_assessment_math> 
+	 
+	*<clean score_assessment_subject> 
+	replace score_mics_read = 0 if score_mics_read== .			 
+	replace score_mics_read =.z if fl10 == . | fl10 ==2	 
+	label define score_mics_read .z "Not applicable" 
+	label val score_mics_read score_mics_read 
+	 
+	replace score_mics_math = 0 if score_mics_math== .			 
+	replace score_mics_math =.z if fl10 == . | fl10 ==2	 
+	label define score_mics_math .z "Not applicable" 
+	label val score_mics_math score_mics_math 
+	//replacing children who drop out because of age, consent or language reasons as ".z" and missing children who failed the reading practice or did not finish reading the story as 0 
+	*<clean score_assessment_subject>* 
 
-	clonevar score_mics_read = read_comp_score_pct 
-     label var score_mics_read "Percentage of correct reading comprehension questions for `assessment' (out of 5)"
-    *}
-    *</_score_assessment_subject_pv_>
-
-    /*<_level_assessment_subject_pv_>
-    *foreach pv in 01 02 03 04 05 {
-      *clonevar level_pirls_read_`pv' = asribm`pv'
-      label var level_pirls_read_`pv' "Plausible value `pv': `assessment' level for reading"
-    *}
-    *</_level_assessment_subject_pv_>*/
-
-	*<clean score_assessment_subject>
-	replace score_mics_read = 0 if score_mics_read== .			
-	replace score_mics_read =.z if fl10 == . | fl10 ==2		
-	label define score_mics_read .z "Not applicable"
-	label val score_mics_read score_mics_read
-	//replacing children who drop out because of age, consent or language reasons as ".z" and missing children who failed the reading practice or did not finish reading the story as 0
-	*<clean score_assessment_subject>
-
+		
+	 *<official_score_assessment_reading>  
+	 gen score_mics_read_literal = 0
+	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
+	 replace score_mics_read_literal=. if cb3<7 | cb3>14 
+	 replace score_mics_read_literal=. if fl28!=1 
+	 
+	 gen score_mics_read_inferential = 0 
+	 replace score_mics_read_inferential= 1 if fl22d==1 & fl22e==1 
+	 replace score_mics_read_inferential=. if cb3<7 | cb3>14  
+	 replace score_mics_read_inferential=. if fl28!=1  
+ 	 *<official_score_assessment_reading>  
+	
+	*<official_score_assessment_math>  
+	 gen score_mics_math_foundational = 0
+	 replace score_mics_math_foundational= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 & fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 
+	 replace score_mics_math_foundational=. if cb3<7 | cb3>14 
+	 replace score_mics_math_foundational=. if fl28!=1 
+ 	 *<official_score_assessment_math> 
+	 
     // TRAIT Vars:
-    local traitvars	"idgrade male age urban school"
+     local traitvars	"idgrade male age urban school total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 	
 	*<_idgrade_> 
 	gen idgrade = cb5b
 	replace idgrade = idgrade + 6 if cb5a== 2
 	replace idgrade = idgrade + 10 if cb5a== 3
 	replace idgrade = . if  cb5b== 99 | cb5b== 98
+	replace idgrade = . if idgrade >=8 & schage <=7
+	label var idgrade "Grade" 
     *</_idgrade_>
 
 
