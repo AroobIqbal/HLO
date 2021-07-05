@@ -13,7 +13,7 @@ local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no n
 local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change date*/
 *
 * Steps:
-* 0) Program setup (identical for all assessments)
+* 0) Program setup (identical for all assessments)fmat
 * 1) Open all rawdata, lower case vars, save in temp_dir
 * 2) Combine all rawdata into a single file (merge and append)
 * 3) Standardize variable names across all assessments
@@ -200,20 +200,20 @@ local dofile_info = "last modified by Katharina Ziegler, 17.5.2021"  /* change d
 	
 	*<official_score_assessment_reading>  
 	 gen score_mics_read_literal = 0
-	 replace score_mics_read_literal= 1 if  (fl22a==1 & fl22b==1 & fl22c==1) 
-	 replace score_mics_read_literal=. if cb3<7 & cb3>14 
+	 replace score_mics_read_literal= 1 if  (fl21ba==1 & fl21bb==1 & fl21bc==1) 
+	 replace score_mics_read_literal=. if cb3<7 | cb3>14 
 	 replace score_mics_read_literal=. if fl28!=1 
 	 
 	 gen score_mics_read_inferential = 0 
-	 replace score_mics_read_inferential= 1 if fl22f==1 & fl22e==1 
-	 replace score_mics_read_inferential=. if cb3<7 & cb3>14  
+	 replace score_mics_read_inferential= 1 if fl21bf==1 & fl21be==1 
+	 replace score_mics_read_inferential=. if cb3<7 | cb3>14  
 	 replace score_mics_read_inferential=. if fl28!=1  
  	 *<official_score_assessment_reading>  
 	
 	*<official_score_assessment_math>  
 	 gen score_mics_math_foundational = 0
 	 replace score_mics_math_foundational= 1 if fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl23f==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 & fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 
-	 replace score_mics_math_foundational=. if cb3<7 & cb3>14 
+	 replace score_mics_math_foundational=. if cb3<7 | cb3>14 
 	 replace score_mics_math_foundational=. if fl28!=1 
  	 *<official_score_assessment_math>
 

@@ -23,6 +23,7 @@ set sortseed 10051990
 
 *Change the line below to first bring the file master_countrycode_list.dta from rawdata (Please include the details available in the file to be able to run the loop over the countrycodes.	
 use "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta",  clear
+keep if assessment== "MICS"
 
 
 /*replace grade_2_3 = 1 if edlevel_current == 1 & (inlist(grade_current,2,3)) & (inlist(countrycode,"BGD","CAF","GHA","GMB","GNB","KGZ","KIR","LSO","MDG") | inlist(countrycode,"MKD","MNG","PAK","PSE","SLE","STP","TKM")
@@ -38,7 +39,7 @@ label values grade_2_3 grade_2_3
 *Setting locals:
 levelsof countrycode, local(country)
 
-local subject read lit infer
+local subject read read_literal read_inferential math math_foundational
 
 local traitvars total 
 gen total = 1 
@@ -51,7 +52,7 @@ label values total total
 foreach c of local country {
 	display "`c'"
 	
-	preserve
+*	preserve
 	
 	keep if countrycode == "`c'" 
 	display "`c'"
@@ -59,16 +60,17 @@ foreach c of local country {
 	levelsof year, local(yr)
 	foreach y of local yr {
 	*display "`c'" "`y'"
-						
+	use "${clone}/01_harmonization/013_outputs/`c'/`c'_`y'_MICS/`c'_`y'_MICS_v01_M_wrk_A_GLAD_ALL", replace
 	*--------------------------------------------------------------------------------
 	* 3) Separating indicators by trait groups
 	*--------------------------------------------------------------------------------
 								
 		foreach sub of local subject {
 			display "`sub'"
-			foreach indicator in score scorescaled rscore {
+			foreach indicator in score {
 				capture confirm variable `indicator'_mics_`sub'
 				display _rc
+				STOP
 				if !_rc {
 
 					foreach trait of local traitvars  {
@@ -78,7 +80,6 @@ foreach c of local country {
 						if r(percent) != 100 { 
 							separate(`indicator'_mics_`sub'), by(`trait') gen(`indicator'`sub'`trait')
 		
-						
 	*-----------------------------------------------------------------------------
 	*4) *Calculation of indicators by subgroups of traitvars
 	*-----------------------------------------------------------------------------
@@ -88,7 +89,7 @@ foreach c of local country {
 
 				
 									*Setting survey structure
-									if !inlist("`c'","KGZ","SLE","SUR","TUN") {
+									if inlist("`c'") {
 									
 										svyset [pweight= learner_weight], strata(strata1) psu(su1)
 
