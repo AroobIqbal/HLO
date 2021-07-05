@@ -145,8 +145,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
 
     *<_idschool_>
-	gen idschool = school
-    label var idschool "School ID"
+	*gen idschool = school
+    *label var idschool "School ID"
     *</_idschool_>
 
     *<_idgrade_> - From report

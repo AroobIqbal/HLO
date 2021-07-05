@@ -146,13 +146,16 @@ svy: tab `var',se
 * number reading
 *number discrimination 
 gen math_discrim= 0 
-replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 
+replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 
+& fl24e==1 
 *number addition 
 gen math_addition= 0 
-replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
+replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 
+& fl25e==1  
 *pattern recognition 
 gen math_recog= 0 
-replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 
+& fl27e==1
 *math foundational
 gen math_foun=0
 replace math_foun= 1 if  fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 &  fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 

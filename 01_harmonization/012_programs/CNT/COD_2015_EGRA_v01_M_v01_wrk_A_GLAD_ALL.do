@@ -10,7 +10,7 @@ local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was upd
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Syedah Aroob Iqbal 21st February, 2020"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -51,7 +51,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 21st February, 2020"  /
 
   // Confirm if the final GLAD file already exists in the local clone
   cap confirm file "`output_dir'/`output_file'.dta"
-  display `output_dir'
+  display _rc
   // If the file does not exist or overwrite_files local is set to one, run the do
   *if (_rc == 601) | (`overwrite_files') {
 
