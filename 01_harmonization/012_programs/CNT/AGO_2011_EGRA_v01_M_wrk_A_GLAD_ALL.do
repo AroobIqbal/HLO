@@ -227,7 +227,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 1
+	gen regionally_representative = 0
 	*<_Regionally_representative_>
 
     *<_learner_weight_> - no weight available

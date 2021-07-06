@@ -4,7 +4,7 @@
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
 local region      = "BDI"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2011"  /* 2015 */
+local year        = "2012"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -152,13 +152,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-foreach var of varlist read_comp* {
-	replace `var' = "1" if `var' == "Oui"
-	replace `var' = "0" if `var' == "Non"
-	destring `var', replace
-}
-	egen score_egra_read = rowtotal(read_comp*)
-	replace score_egra_read = (score_egra_read/4)*100
+	egen read_comp_score = rowtotal(read_comp*)
+	gen score_egra_read = (read_comp_score/9)*100 
+	replace score_egra_read = (read_comp_score/5)*100 if missing(read_comp6)
     label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
     *</_score_assessment_subject_pv_>
@@ -172,10 +168,10 @@ foreach var of varlist read_comp* {
 
 
     // TRAIT Vars:
-    local traitvars	" male age"
+    local traitvars	" male age idgrade"
 	
 	*<_idgrade_> - From report
-	clonevar idgrade = classe_eleve
+	gen idgrade = 2
     label var idgrade "Grade"
     *</_idgrade_> */
 
@@ -202,7 +198,7 @@ foreach var of varlist read_comp* {
     *<_male_>
     gen male = .
 	replace male=0 if fille=="Oui"
-	replace male=1 if fille=="Non"
+	replace male=0 if fille=="Non"
 	label define male 1 "male" 0 "female"
     label var male "Learner gender is male/female"
 	label values male male
@@ -210,7 +206,7 @@ foreach var of varlist read_comp* {
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 strata1"
+    local samplevars "learner_weight "
 	
 
 	

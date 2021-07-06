@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "BDI"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2011"  /* 2015 */
+local region      = "BGD"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2014"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -87,11 +87,11 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2011.dta", clear
+           use "`input_dir'/2014_NNPS.dta", clear
          }
          rename *, lower
          compress
-         save "`temp_dir'/2011.dta", replace
+         save "`temp_dir'/2014_NNPS.dta", replace
 		
 		
 
@@ -120,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner"
+    local idvars "idcntry_raw year idlearner idschool"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -134,8 +134,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     *<_idschool_> - there are some missing values so removing idschool
-	*gen idschool = numecole
-    *label var idschool "School ID"
+	gen idschool = masked_schoolcode
+    label var idschool "School ID"
     *</_idschool_>
 
     *<_idlearner_>
@@ -152,13 +152,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-foreach var of varlist read_comp* {
-	replace `var' = "1" if `var' == "Oui"
-	replace `var' = "0" if `var' == "Non"
-	destring `var', replace
-}
-	egen score_egra_read = rowtotal(read_comp*)
-	replace score_egra_read = (score_egra_read/4)*100
+	egen read_comp_score_sum = rowtotal(comp*)
+	gen read_comp_score_zero = (read_comp_score_sum == 0)
+	gen score_egra_read = (read_comp_score_sum/10)*100
     label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
     *</_score_assessment_subject_pv_>
@@ -172,17 +168,15 @@ foreach var of varlist read_comp* {
 
 
     // TRAIT Vars:
-    local traitvars	" male age"
+    local traitvars	"male age idgrade"
 	
 	*<_idgrade_> - From report
-	clonevar idgrade = classe_eleve
+	clonevar idgrade = _class
     label var idgrade "Grade"
     *</_idgrade_> */
 
 
     *<_age_> 
-	drop age
-	clonevar age = age_eleve
     label var age "Learner age at time of assessment"
     *</_age_>
 
@@ -201,8 +195,8 @@ foreach var of varlist read_comp* {
 
     *<_male_>
     gen male = .
-	replace male=0 if fille=="Oui"
-	replace male=1 if fille=="Non"
+	replace male=0 if sex== 1
+	replace male=1 if sex==0
 	label define male 1 "male" 0 "female"
     label var male "Learner gender is male/female"
 	label values male male
@@ -210,16 +204,16 @@ foreach var of varlist read_comp* {
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 strata1"
+    local samplevars "learner_weight "
 	
 
 	
 	*<_Nationally_representative_> 
-	gen national_level = 1
+	gen national_level = 0
 	*</_Nationally_representative_>
 	
 	*<_Nationally_representative_> 
-	gen nationally_representative = 1
+	gen nationally_representative = 0
 	*</_Nationally_representative_>
 
 	
@@ -228,14 +222,14 @@ foreach var of varlist read_comp* {
 	*<_Regionally_representative_>
 
     *<_learner_weight_> 
-    gen learner_weight  = iproinclu
+    gen learner_weight  = 1
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
    /* *<_psu_>
     clonevar su1  = stage1
     label var su1 "Primary sampling unit"
-    *</_learner_weight_> */
+    *</_learner_weight_> 
 	
 	*<_strata1_>
 	clonevar strata1 =strate_base
@@ -246,7 +240,7 @@ foreach var of varlist read_comp* {
     label var fpc1 "fpc 1"
     *</_learner_weight_>
 
-	/*<_su2_>
+	<_su2_>
 	clonevar su2 = stage2
     label var su2 "Sampling unit 2"
     *</_learner_weight_>
@@ -281,7 +275,7 @@ foreach var of varlist read_comp* {
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
+	*svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -326,7 +320,7 @@ foreach var of varlist read_comp* {
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = "french"
+	gen language_test = "bangla"
 	*<_language_test_>
 
 	
