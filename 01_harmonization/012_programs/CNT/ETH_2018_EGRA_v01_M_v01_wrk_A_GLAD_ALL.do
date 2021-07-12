@@ -10,7 +10,7 @@ local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was upd
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler, 12.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -264,7 +264,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-
+		svyset su1 [pweight= learner_weight], strata(strata1) || su2, strata(strata2)  singleunit(scaled) 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

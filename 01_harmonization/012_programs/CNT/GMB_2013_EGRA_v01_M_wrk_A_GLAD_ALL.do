@@ -10,7 +10,7 @@ local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was upd
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -222,7 +222,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight psu strata1 fpc1 su2 strata2 fpc2"
+    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2"
 	
 	*gen wt1=pw1*pw2
 
@@ -243,8 +243,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar psu  = idschool
-    label var psu "Primary sampling unit"
+    clonevar su1  = idschool
+    label var su1 "Primary sampling unit"
     *</_learner_weight_>
 	
 	*<_strata1_>
@@ -278,7 +278,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-
+	svyset su1 [pw=learner_weight],strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

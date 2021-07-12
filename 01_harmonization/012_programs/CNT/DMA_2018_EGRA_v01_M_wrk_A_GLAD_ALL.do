@@ -3,14 +3,14 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "BGD"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2016"  /* 2015 */
+local region      = "DMA"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2018"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -79,28 +79,20 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
-		
 
-    noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
+
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
-		local list GPS NNPS RCT
-         foreach file in `list' {
-		 	if `from_datalibweb'==1 {
+         if `from_datalibweb'==1 {
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2016_`file'.dta", clear
-			
+           use "`input_dir'/DOM_2018_EGRA.dta", clear
          }
-		 capture confirm variable Readpct
-		if (_rc == 0) {
-		rename Readpct readpct3
-}
          rename *, lower
          compress
-         save "`temp_dir'/2016_`file'.dta", replace
-		}
+         save "`temp_dir'/DOM_2018_EGRA.dta", replace
+		
 		
 
     noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
@@ -113,17 +105,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     /* NOTE: the merge / append of all rawdata saved in temp in above step
        will vary slightly by assessment.
        See the two examples continuedw and change according to your needs */
-	   local list GPS NNPS 
-       foreach file in `list' {
-	   append using "`temp_dir'/2016_`file'.dta", force
-	   *According to Shahana at UNICEF Bangladesh, all the data where consent is not equal to 1 should be dropped.
-		drop if mid_consent != "yes"
-		drop if year < 2015
-		drop if missing(mid_class)
-		drop if mid_class == 0
-	   }
+	   
 	   *Just one file
-		noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
+    noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
     *---------------------------------------------------------------------------
@@ -136,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner idschool"
+    local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -144,18 +128,22 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *</_idcntry_raw_>
 	
 	*<_year_>
-	replace year = `year' if year==.
 	label var year "Year"
 	*</_year_>
 
 
-    *<_idschool_> - there are some missing values so removing idschool
-	gen idschool = masked_schoolcode
+    *<_idschool_>
+	gen idschool = schoolnum
     label var idschool "School ID"
     *</_idschool_>
 
+
+    /*<_idclass_> - Information not available 
+    label var idclass "Class ID"
+    *</_idclass_>*/
+
     *<_idlearner_>
-	gen idlearner = masked_studentid
+	gen idlearner = id
     label var idlearner "Learner ID"
     *</_idlearner_>
 
@@ -168,9 +156,19 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	egen read_comp_score_sum = rowtotal(comp?)
-	replace read_comp_score_sum = read_comp_score_sum + comp10
-	gen score_egra_read = (read_comp_score_sum/10)*100
+	encode a2q1, generate (a2q1_n)
+	encode a2q2, generate (a2q2_n)
+	encode a2q3, generate (a2q3_n)
+	encode a2q4, generate (a2q4_n)
+	encode a2q5, generate (a2q5_n)
+	replace a2q1_n =0 if a2q1_n==.
+	replace a2q2_n=0 if a2q2_n==.
+	replace a2q3_n=0 if a2q3_n==.
+	replace a2q4_n=0 if a2q4_n==.
+	replace a2q5_n=0 if a2q5_n==.
+	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q4_n a2q5_n)
+	gen read_comp_score_pcnt=sum/5*10
+	gen score_egra_read = read_comp_score_pcnt
     label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
     *</_score_assessment_subject_pv_>
@@ -184,24 +182,21 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	"male age idgrade"
+    local traitvars	" idgrade male age urban"
 	
 	*<_idgrade_> - From report
-	clonevar idgrade = _class
-	*replace idgrade  = class if idgrade==.
+	gen idgrade = 2
     label var idgrade "Grade"
-    *</_idgrade_> */
+    *</_idgrade_> 
 
 
     *<_age_> 
     label var age "Learner age at time of assessment"
     *</_age_>
 
-    /* <_urban_> 
-	clonevar urban=location
+    * <_urban_> 
+	gen urban=location
 	replace urban=0 if urban==2
-	label define urban 1 "urban" 0 "rural"
-	label values urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>
 
@@ -211,9 +206,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *</_urban_o_>*/ */
 
     *<_male_>
-    gen male = .
-	replace male=0 if sex== 1
-	replace male=1 if sex==0
+    gen male = sex
+	replace male =0 if male ==2
 	label define male 1 "male" 0 "female"
     label var male "Learner gender is male/female"
 	label values male male
@@ -226,11 +220,11 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 	
 	*<_Nationally_representative_> 
-	gen national_level = 0
+	gen national_level = 1
 	*</_Nationally_representative_>
 	
 	*<_Nationally_representative_> 
-	gen nationally_representative = 0
+	gen nationally_representative = 1
 	*</_Nationally_representative_>
 
 	
@@ -246,10 +240,12 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
    /* *<_psu_>
     clonevar su1  = stage1
     label var su1 "Primary sampling unit"
-    *</_learner_weight_> 
+    *</_learner_weight_>
 	
 	*<_strata1_>
-	clonevar strata1 =strate_base
+	encode strata1, gen(strata1e)
+	drop strata1
+	ren strata1e strata1
     label var strata1 "Strata 1"
     *</_learner_weight_>
 	
@@ -257,7 +253,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     label var fpc1 "fpc 1"
     *</_learner_weight_>
 
-	<_su2_>
+	*<_su2_>
 	clonevar su2 = stage2
     label var su2 "Sampling unit 2"
     *</_learner_weight_>
@@ -292,7 +288,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	*svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
+*/
+	svyset [pweight= learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -337,7 +334,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = "bangla"
+	gen language_test = "english"
 	*<_language_test_>
 
 	
