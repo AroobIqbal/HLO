@@ -228,8 +228,12 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
 	
-		*<_Nationally_representative_> 
+	*<_Nationally_representative_> 
 	gen national_level = 1
+	*</_Nationally_representative_>
+	
+	*<_Nationally_representative_> 
+	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 

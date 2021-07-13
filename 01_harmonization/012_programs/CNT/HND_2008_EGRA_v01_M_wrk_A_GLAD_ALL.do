@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "GMB"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2011"  /* 2015 */
+local region      = "HND"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2008"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -87,12 +87,11 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2011.dta", clear
+           use "`input_dir'/2008.dta", clear
          }
-        drop t_q20_other
 		rename *, lower
          compress
-         save "`temp_dir'/2011.dta", replace
+         save "`temp_dir'/2008.dta", replace
 		
 		
 
@@ -123,10 +122,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idgrade idlearner"
+    local idvars "idcntry_raw year  idgrade idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "GMB"
+    gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
 	
@@ -134,11 +133,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	label var year "Year"
 	*</_year_>
 
-
-    *<_idschool_>
+   /*<_idschool_> - not available
 	gen idschool = school_code
     label var idschool "School ID"
-    *</_idschool_>
+    *<_idschool_> */
 
     *<_idgrade_> - From report
 	clonevar idgrade = grade
@@ -204,7 +202,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2"
+    local samplevars "learner_weight fpc1  fpc2"
 	
 	*gen wt1=pw1*pw2
 
@@ -214,7 +212,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	gen national_level = 1
 	*</_Nationally_representative_>
 	
-	*<_Nationally_representative_> 
+		*<_Nationally_representative_> 
 	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
@@ -228,7 +226,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
+    /*<_psu_>
     clonevar su1  = idschool
     label var su1 "Primary sampling unit"
     *</_learner_weight_>
@@ -236,13 +234,13 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	*<_strata1_>
     clonevar strata1  = strat1
     label var strata1 "Strata 1"
-    *</_learner_weight_>
+    *</_learner_weight_> */
 	
 	*<_fpc1_>
     label var fpc1 "fpc 1"
     *</_learner_weight_>
 
-	*<_su2_>
+	/*<_su2_>
 	clonevar su2 = id
     label var su2 "Sampling unit 2"
     *</_learner_weight_>
@@ -250,7 +248,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	*<_strata2_>
 	clonevar strata2 = strat2
     label var strata2 "Strata 2"
-    *</_learner_weight_>
+    *</_learner_weight_> */
 
 	*<_fpc2_>
     label var fpc2 "fpc 2"
@@ -263,7 +261,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) vce(linearized) || su2, fpc(fpc2) strata(strata2) singleunit(scaled)
+	svyset [pweight = learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -308,7 +306,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = language
+	clonevar language_test = language
 	*<_language_test_>
 
 	
