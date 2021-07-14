@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "GMB"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2011"  /* 2015 */
+local region      = "IDN"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2014"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -80,19 +80,16 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
-
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
+	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2014.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2011.dta", clear
+           use "`input_dir'/2014.dta", clear
          }
-        drop t_q20_other
 		rename *, lower
          compress
-         save "`temp_dir'/2011.dta", replace
+         save "`temp_dir'/2014.dta", replace
 		
 		
 
@@ -123,10 +120,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idgrade idlearner"
+    local idvars "idcntry_raw year idgrade idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "GMB"
+    gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
 	
@@ -134,13 +131,12 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	label var year "Year"
 	*</_year_>
 
-
-    *<_idschool_>
+   *<_idschool_> 
 	gen idschool = school_code
     label var idschool "School ID"
-    *</_idschool_>
+    *<_idschool_> */
 
-    *<_idgrade_> - From report
+    *<_idgrade_>
 	clonevar idgrade = grade
     label var idgrade "Grade ID"
     *</_idgrade_>
@@ -164,8 +160,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	clonevar score_egra_read = read_comp_score_pcnt
-      label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	clonevar score_egra_read_i = i_read_comp_score_pcnt
+	clonevar score_egra_read_ilb = ilb_read_comp_score_pcnt
+    label var score_egra_read_i "Plausible value `pv': `assessment' score for reading i "
+    label var score_egra_read_ilb "Plausible value `pv': `assessment' score for reading ilb "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -206,56 +204,66 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2"
-	
-	*gen wt1=pw1*pw2
-
-	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
+    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 su4 fpc4 strata4"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
 	*</_Nationally_representative_>
 	
-	*<_Nationally_representative_> 
+		*<_Nationally_representative_> 
 	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 0
+	gen regionally_representative = 1
 	*<_Regionally_representative_>
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = wt_final
+    clonevar learner_weight  = wt_stage4
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar su1  = idschool
+    clonevar su1  = stage1
     label var su1 "Primary sampling unit"
-    *</_learner_weight_>
+    *</_psu_>
 	
 	*<_strata1_>
-    clonevar strata1  = strat1
+   * clonevar strata1  = strat1
     label var strata1 "Strata 1"
-    *</_learner_weight_>
+    *</_strata1_> */
 	
 	*<_fpc1_>
     label var fpc1 "fpc 1"
-    *</_learner_weight_>
+    *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = id
+	clonevar su2 = stage2
     label var su2 "Sampling unit 2"
-    *</_learner_weight_>
+    *</_su2_>
 	
 	*<_strata2_>
-	clonevar strata2 = strat2
+	*clonevar strata2 = strat2
     label var strata2 "Strata 2"
-    *</_learner_weight_>
+    *</_strata2_> */
 
 	*<_fpc2_>
     label var fpc2 "fpc 2"
+    *</_fpc2_>
+	
+	*<_su4_>
+	clonevar su4 = stage4
+    label var su4 "Sampling unit 4"
+    *</_su4_>
+	
+	*<_strata4_>
+	*clonevar strata2 = strat2
+    label var strata4 "Strata 4"
+    *</_strata2_> */
+
+	*<_fpc4_>
+    label var fpc4 "fpc 4"
     *</_learner_weight_>
 
     /*<_jkzone_>
@@ -265,7 +273,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) vce(linearized) || su2, fpc(fpc2) strata(strata2) singleunit(scaled)
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) || su4, fpc(fpc4) strata(strata4) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -309,8 +317,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // Update valuevars to include newly created harmonized vars (from the ado)
     local valuevars : list valuevars | resultvars
 	
-		*<_language_test_> 
-	gen language_test = language
+	*<_language_test_> 
+	gen language_test = "Bhasa Indonesia"
 	*<_language_test_>
 
 	

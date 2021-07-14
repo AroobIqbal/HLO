@@ -185,6 +185,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_age_>
 
     * <_urban_> 
+	label define urban 1 "urban" 0 "rural", replace
+	label var urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>
 

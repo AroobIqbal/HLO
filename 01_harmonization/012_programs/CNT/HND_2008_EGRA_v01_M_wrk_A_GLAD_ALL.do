@@ -197,16 +197,15 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     gen byte male = female
 	replace male = 1 if female == 0 
 	replace male = 0 if female == 1 
+	label define male 1 "male" 0 "female", replace
+	label var male male
     label var male "Learner gender is male/female"
     *</_male_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight fpc1  fpc2"
-	
-	*gen wt1=pw1*pw2
 
-	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1

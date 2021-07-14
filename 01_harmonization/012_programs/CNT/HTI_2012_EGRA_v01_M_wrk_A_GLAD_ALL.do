@@ -196,6 +196,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     gen byte male = .
 	replace male = 1 if female == 0
 	replace male = 0 if female == 1
+	label define male 1 "male" 0 "female", replace
+	label var male male
     label var male "Learner gender is male/female"
     *</_male_>
 

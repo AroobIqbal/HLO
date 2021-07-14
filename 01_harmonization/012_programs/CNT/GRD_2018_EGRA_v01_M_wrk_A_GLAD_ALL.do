@@ -196,6 +196,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     * <_urban_> 
 	gen urban=location
 	replace urban=0 if urban==2
+	label define urban 1 "urban" 0 "rural", replace
+	label var urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>
 
