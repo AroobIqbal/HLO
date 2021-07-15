@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "KGZ"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2017"  /* 2015 */
+local region      = "KHM"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2010"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -85,11 +85,11 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2017.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2017.dta", clear
+           use "`input_dir'/2010.dta", clear
          }
 		rename *, lower
          compress
-         save "`temp_dir'/2017.dta", replace
+         save "`temp_dir'/2010.dta", replace
 		
 		
 
@@ -133,12 +133,14 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	*</_year_>
 
    *<_idschool_> 
-	gen idschool = masked_schoolid
+	gen idschool = school
+	replace idschool =99 if idschool ==.
     label var idschool "School ID"
     *<_idschool_> */
 
     *<_idgrade_>
 	clonevar idgrade = grade
+	replace idgrade =99 if idgrade ==.
     label var idgrade "Grade ID"
     *</_idgrade_>
 
@@ -147,7 +149,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_idclass_>*/
 
     *<_idlearner_>
-	gen idlearner = masked_studentid
+	gen idlearner = _n
     label var idlearner "Learner ID"
     *</_idlearner_>
 
@@ -161,7 +163,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	clonevar score_egra_read = rpc_score
+	destring sophy*, replace
+	egen read_comp_score = rowtotal(sophy*)
+	gen read_comp_score_pcnt = (read_comp_score/5)*100
+	clonevar score_egra_read = read_comp_score_pcnt
     label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
     *</_score_assessment_subject_pv_>
@@ -175,7 +180,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male urban"
+    /*local traitvars	""
 
     *<_age_>
     *clonevar age = std_age	
@@ -204,10 +209,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	label var male male
     label var male "Learner gender is male/female"
     *</_male_>
-
+*/
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 "
+    local samplevars "learner_weight "
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -223,11 +228,11 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    gen learner_weight  = wt_final
+    gen learner_weight  = 1
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
+    /*<_psu_>
     clonevar su1  = idschool
     label var su1 "Primary sampling unit"
     *</_psu_>
@@ -276,7 +281,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ */
-	svyset su1 [pweight = learner_weight], strata(strata1) vce(linearized) 
+	svyset su1 [pweight = learner_weight], strata(strata1) vce(linearized) */
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -322,9 +327,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 	*<_language_test_> 
-	replace language = "Kyrgyz" if language == "K"
-	replace language = "Russian" if language == "R"
-	clonevar language_test = language
+	gen language_test = "khmer"
 	*<_language_test_>
 
 	

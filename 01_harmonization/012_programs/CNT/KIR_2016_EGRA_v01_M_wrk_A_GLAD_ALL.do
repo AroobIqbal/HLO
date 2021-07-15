@@ -3,14 +3,14 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "KGZ"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2017"  /* 2015 */
+local region      = "KIR"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2016"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -82,14 +82,14 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2017.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2016.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2017.dta", clear
+           use "`input_dir'/2016.dta", clear
          }
 		rename *, lower
          compress
-         save "`temp_dir'/2017.dta", replace
+         save "`temp_dir'/2016.dta", replace
 		
 		
 
@@ -120,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idlearner"
+    local idvars "idcntry_raw year idgrade idlearner idschool"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -128,12 +128,12 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_idcntry_raw_>
 	
 	*<_year_>
-	gen year = "`year'"
+	*gen year = "`year'"
 	label var year "Year"
 	*</_year_>
 
    *<_idschool_> 
-	gen idschool = masked_schoolid
+	gen idschool = schoolcode
     label var idschool "School ID"
     *<_idschool_> */
 
@@ -147,7 +147,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_idclass_>*/
 
     *<_idlearner_>
-	gen idlearner = masked_studentid
+	gen idlearner = id
     label var idlearner "Learner ID"
     *</_idlearner_>
 
@@ -161,7 +161,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	clonevar score_egra_read = rpc_score
+	clonevar score_egra_read = readcomp_pct
     label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
     *</_score_assessment_subject_pv_>
@@ -175,21 +175,21 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male urban"
+    local traitvars	"age male"
 
     *<_age_>
     *clonevar age = std_age	
-    *label var age "Learner age at time of assessment"
+    label var age "Learner age at time of assessment"
     *</_age_>
 
-    *<_urban_> - Urban not available
+    /*<_urban_> - Urban not available
     gen urban = .
 	replace urban = 1 if urbansemiurbanrural =="urban" | urbansemiurbanrural =="semiurban"
 	replace urban = 1 if urbansemiurbanrural =="rural"
 	label define urban 1 "urban" 0 "rural"
 	label var urban urban
     label var urban "School is located in urban/rural area"
-    *</_urban_>
+    *</_urban_>*/
 
     /*<_urban_o_>
     *decode acbg05a, g(urban_o)
@@ -198,16 +198,16 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     *<_male_>
     gen byte male = .
-	replace male = 1 if gender=="B"
-	replace male = 0 if gender=="G"
+	replace male = 1 if female==0
+	replace male = 0 if female==1
 	label define male 1 "male" 0 "female", replace
 	label var male male
     label var male "Learner gender is male/female"
     *</_male_>
-
+*/
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 "
+    local samplevars "learner_weight su1 fpc1"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -223,25 +223,25 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    gen learner_weight  = wt_final
+    gen learner_weight  = weight
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar su1  = idschool
+    clonevar su1  = schoolcode
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
 	*<_strata1_>
-	clonevar strata1  = treatment
-    label var strata1 "Strata 1"
+	*clonevar strata1  = treatment
+    *label var strata1 "Strata 1"
     *</_strata1_> 
 	
-	/*<_fpc1_>
+	*<_fpc1_>
     label var fpc1 "fpc 1"
     *</_fpc1_>
 
-	*<_su2_>
+	/*<_su2_>
 	clonevar su2 = id
     label var su2 "Sampling unit 2"
     *</_su2_>
@@ -276,7 +276,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ */
-	svyset su1 [pweight = learner_weight], strata(strata1) vce(linearized) 
+	svyset su1 [pweight = learner_weight], fpc(fpc1) singleunit(scaled) 
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -322,9 +322,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 	*<_language_test_> 
-	replace language = "Kyrgyz" if language == "K"
-	replace language = "Russian" if language == "R"
-	clonevar language_test = language
+	gen language_test = "kiribati"
 	*<_language_test_>
 
 	
