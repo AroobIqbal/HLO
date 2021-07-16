@@ -196,7 +196,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	replace male = 1 if female==0
 	replace male = 0 if female==1
 	label define male 1 "male" 0 "female", replace
-	label var male male
+	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 

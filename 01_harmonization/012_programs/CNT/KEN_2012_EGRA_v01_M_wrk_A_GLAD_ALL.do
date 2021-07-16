@@ -185,7 +185,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_urban_> - Urban not available
     *gen byte urban = (inlist(acbg05a, 1, 2, 3, 4, 5)) if !missing(acbg05a) & acbg05a != 9
 	label define urban 1 "urban" 0 "rural", replace
-	label var urban urban
+	label val urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>
 
@@ -199,7 +199,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	replace male = 1 if female==0
 	replace male = 0 if female==1
 	label define male 1 "male" 0 "female", replace
-	label var male male
+	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 

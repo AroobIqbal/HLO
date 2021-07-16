@@ -194,7 +194,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	gen urban = location
 	replace urban=0 if urban==2
 	label define urban 1 "urban" 0 "rural", replace
-	label var urban urban
+	label val urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>*/
 
@@ -207,7 +207,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     gen byte male = sex
 	replace male = 0 if male==2
 	label define male 1 "male" 0 "female", replace
-	label var male male
+	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 
