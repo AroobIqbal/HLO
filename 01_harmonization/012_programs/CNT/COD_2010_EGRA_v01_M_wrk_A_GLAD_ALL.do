@@ -159,7 +159,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     replace read_comp_score_pcnt = 0 if missing(read_comp_score_pcnt) & inlist(grade,4,6)
 	replace read_comp_score_zero = 0 if missing(read_comp_score_zero) & inlist(grade,4,6)
 	gen score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -174,7 +174,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // TRAIT Vars:
     local traitvars	" idgrade male age"
 	
-	*<_idgrade_> - From report
+	*<_idgrade_> 
 	clonevar idgrade = grade
     label var idgrade "Grade"
     *</_idgrade_> 

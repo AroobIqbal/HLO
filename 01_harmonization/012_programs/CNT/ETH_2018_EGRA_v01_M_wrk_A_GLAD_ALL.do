@@ -121,7 +121,7 @@ local dofile_info = "last modified by Katharina Ziegler, 12.7.2021"  /* change d
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idgrade idlearner"
+    local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "ETH"
@@ -138,11 +138,6 @@ local dofile_info = "last modified by Katharina Ziegler, 12.7.2021"  /* change d
 	gen idschool = school
     label var idschool "School ID"
     *</_idschool_>
-
-    *<_idgrade_> - From report
-	clonevar idgrade = grade
-    label var idgrade "Grade ID"
-    *</_idgrade_>
 
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
@@ -165,7 +160,7 @@ local dofile_info = "last modified by Katharina Ziegler, 12.7.2021"  /* change d
     *<_score_assessment_subject_pv_>
     *foreach pv in 01 02 03 04 05 {
 	clonevar score_egra_read = rc_pct_eq
-      label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+      label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -178,7 +173,12 @@ local dofile_info = "last modified by Katharina Ziegler, 12.7.2021"  /* change d
 
 
     // TRAIT Vars:
-    local traitvars	"male"
+    local traitvars	"idgrade male"
+	
+    *<_idgrade_> 
+	clonevar idgrade = grade
+    label var idgrade "Grade ID"
+    *</_idgrade_>
 
     /*<_age_> -Not available
     *clonevar age = std_age	

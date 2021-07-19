@@ -124,12 +124,17 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idlearner"
+    local idvars "idcntry_raw idregion year idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    clonevar idregion = municipality
+    label var idregion "Region"
+    *</_idregion_>
 	
 	*<_year_>
 	*replace year = 2013 if year == .
@@ -140,12 +145,6 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	*gen idschool = school_code
     *label var idschool "School ID"
     *<_idschool_> */
-
-    *<_idgrade_>
-	clonevar idgrade = grade
-	*replace idgrade = 99 if idgrade== .
-    label var idgrade "Grade ID"
-    *</_idgrade_>
 
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
@@ -166,19 +165,15 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
+	destring read_comp1_question*, replace
 	foreach var of varlist read_comp1_question* {
-	replace `var' = "0" if `var' == "notAsked"
-	destring `var', gen(`var'_n)
-	replace `var'_n = 0 if `var'_n == 99
-	replace `var'_n = 0 if missing(`var'_n)
-	drop `var'
-	ren `var'_n `var'
+	replace `var' = 0 if `var' == 99
+	replace `var' = 0 if missing(`var')
 }
 	egen read_comp_score = rowtotal(read_comp1_question*)
-
-	gen read_comp_score_pcnt = (read_comp_score/8)*100
+	gen read_comp_score_pcnt = (read_comp_score/10)*100
 	clonevar score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -191,8 +186,14 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"idgrade age male"
 
+	*<_idgrade_>
+	clonevar idgrade = grade
+	*replace idgrade = 99 if idgrade== .
+    label var idgrade "Grade ID"
+    *</_idgrade_>
+	
     *<_age_>
     *clonevar age = std_age	
     label var age "Learner age at time of assessment"

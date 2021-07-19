@@ -120,12 +120,17 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner"
+    local idvars "idcntry_raw idregion year idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    clonevar idregion = provinceb
+    label var idregion "Region"
+    *</_idregion_>
 	
 	*<_year_>
 	gen year = `year'
@@ -159,7 +164,7 @@ foreach var of varlist read_comp* {
 }
 	egen score_egra_read = rowtotal(read_comp*)
 	replace score_egra_read = (score_egra_read/4)*100
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -172,7 +177,7 @@ foreach var of varlist read_comp* {
 
 
     // TRAIT Vars:
-    local traitvars	" male age"
+    local traitvars	"idgrade male age"
 	
 	*<_idgrade_> - From report
 	clonevar idgrade = classe_eleve

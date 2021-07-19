@@ -120,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idlearner idschool"
+    local idvars "idcntry_raw year idlearner idschool"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -136,12 +136,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	gen idschool = schoolcode
     label var idschool "School ID"
     *<_idschool_> */
-
-    *<_idgrade_>
-	clonevar idgrade = grade
-    label var idgrade "Grade ID"
-    *</_idgrade_>
-
+	
+	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
@@ -162,7 +158,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     *<_score_assessment_subject_pv_>
 	clonevar score_egra_read = readcomp_pct
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -175,7 +171,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"age male idgraded"
 
     *<_age_>
     *clonevar age = std_age	
@@ -204,7 +200,11 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
-*/
+
+	*<_idgrade_>
+	clonevar idgrade = grade
+    label var idgrade "Grade ID"
+    *</_idgrade_>
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight su1 fpc1"

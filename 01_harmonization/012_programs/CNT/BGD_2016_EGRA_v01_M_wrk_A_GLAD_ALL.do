@@ -87,7 +87,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 		local list GPS NNPS RCT
          foreach file in `list' {
 		 	if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2016.dta) `shortcut')
          }
          else {
            use "`input_dir'/2016_`file'.dta", clear
@@ -117,9 +117,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
        foreach file in `list' {
 	   append using "`temp_dir'/2016_`file'.dta", force
 	   *According to Shahana at UNICEF Bangladesh, all the data where consent is not equal to 1 should be dropped.
-		drop if mid_consent != "yes"
+		drop if mid_consent == "no"
 		drop if year < 2015
-		drop if missing(mid_class)
 		drop if mid_class == 0
 	   }
 	   *Just one file
@@ -166,12 +165,10 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
-
     *<_score_assessment_subject_pv_>
-	egen read_comp_score_sum = rowtotal(comp?)
-	replace read_comp_score_sum = read_comp_score_sum + comp10
-	gen score_egra_read = (read_comp_score_sum/10)*100
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	gen score_egra_read = comprpct*100
+	replace score_egra_read= 0 if score_egra_read==.
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 

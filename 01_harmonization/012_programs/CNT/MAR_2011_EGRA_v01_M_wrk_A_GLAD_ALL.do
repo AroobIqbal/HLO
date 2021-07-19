@@ -120,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idschool idlearner"
+    local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -135,17 +135,13 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
    *<_idschool_> 
 	gen idschool = school_code
     label var idschool "School ID"
-    *<_idschool_> */
+	*<_idschool_> */
 
-    *<_idgrade_>
-	clonevar idgrade = grade
-    label var idgrade "Grade ID"
-    *</_idgrade_>
-
+	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
-
+	
     *<_idlearner_>
 	gen idlearner = id
     label var idlearner "Learner ID"
@@ -162,7 +158,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     *<_score_assessment_subject_pv_>
 	clonevar score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -175,7 +171,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"age male idgrade"
 
     *<_age_>
     *clonevar age = std_age	
@@ -202,8 +198,14 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	label define male 1 "male" 0 "female", replace
 	label val male male
     label var male "Learner gender is male/female"
-    *</_male_>
+    *</_male_
 
+    *<_idgrade_>
+	clonevar idgrade = grade
+    label var idgrade "Grade ID"
+    *</_idgrade_>
+
+	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight su1 su2 fpc1 fpc2"
 	
@@ -221,7 +223,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    gen learner_weight  = wt_final
+    gen learner_weight  = final_wt
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
@@ -274,7 +276,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */
-	svyset su1 [pweight = learner_weight], fpc(fpc1) || su2, fpc(fpc2) singleunit(scaled)  */
+	svyset su1 [pweight = learner_weight], fpc(fpc1) || su2, fpc(fpc2) singleunit(scaled)  
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 

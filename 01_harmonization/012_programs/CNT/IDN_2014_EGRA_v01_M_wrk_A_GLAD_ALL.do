@@ -120,12 +120,18 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idlearner"
+    local idvars "idcntry_raw idregion year idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    decode region, gen(idregion)
+    label var idregion "Region"
+    *</_idregion_>
+	
 	
 	*<_year_>
 	label var year "Year"
@@ -135,12 +141,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	gen idschool = school_code
     label var idschool "School ID"
     *<_idschool_> */
-
-    *<_idgrade_>
-	clonevar idgrade = grade
-    label var idgrade "Grade ID"
-    *</_idgrade_>
-
+	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
@@ -162,8 +163,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_score_assessment_subject_pv_>
 	clonevar score_egra_read_i = i_read_comp_score_pcnt
 	clonevar score_egra_read_ilb = ilb_read_comp_score_pcnt
-    label var score_egra_read_i "Plausible value `pv': `assessment' score for reading i "
-    label var score_egra_read_ilb "Plausible value `pv': `assessment' score for reading ilb "
+    label var score_egra_read_i "Percentage of correct reading comprehension questions for `assessment' i "
+    label var score_egra_read_ilb "Percentage of correct reading comprehension questions for `assessment' ilb "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -176,7 +177,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"age male idgrade"
 
     *<_age_>
     *clonevar age = std_age	
@@ -201,6 +202,11 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
+
+	*<_idgrade_>
+	clonevar idgrade = grade
+    label var idgrade "Grade ID"
+    *</_idgrade_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */

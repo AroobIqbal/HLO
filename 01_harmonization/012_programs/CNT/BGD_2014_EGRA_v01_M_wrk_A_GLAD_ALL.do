@@ -150,12 +150,10 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
-
     *<_score_assessment_subject_pv_>
-	egen read_comp_score_sum = rowtotal(comp*)
-	gen read_comp_score_zero = (read_comp_score_sum == 0)
-	gen score_egra_read = (read_comp_score_sum/10)*100
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	replace comptotal= 0 if comptotal==.
+	gen score_egra_read = (comptotal/10)*100
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 

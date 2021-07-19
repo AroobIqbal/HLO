@@ -120,7 +120,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idlearner idschool"
+    local idvars "idcntry_raw year idlearner idschool"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -137,15 +137,11 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     label var idschool "School ID"
     *<_idschool_> */
 
-    *<_idgrade_>
-	gen idgrade = 2
-    label var idgrade "Grade ID"
-    *</_idgrade_>
-
+	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
-
+	
     *<_idlearner_>
 	gen idlearner = id
     label var idlearner "Learner ID"
@@ -167,10 +163,10 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	replace a2q3_n=0 if a2q3_n==.
 	replace a2q4_n=0 if a2q4_n==.
 	replace a2q5_n=0 if a2q5_n==.
-	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q3_n a2q4_n a2q5_n)
+	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q4_n a2q5_n)
 	gen read_comp_score_pcnt=sum/5*100
 	clonevar score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -183,7 +179,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male urban"
+    local traitvars	"age male urban idgrade"
 
     *<_age_>
     *clonevar age = std_age	
@@ -210,7 +206,11 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
-*/
+	
+    *<_idgrade_>
+	gen idgrade = 2
+    label var idgrade "Grade ID"
+    *</_idgrade_>
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight "

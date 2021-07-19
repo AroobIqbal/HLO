@@ -119,7 +119,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idgrade idschool idlearner"
+    local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "HTI"
@@ -135,12 +135,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 	clonevar idschool = school_code
     label var idschool "School ID"
     *</_idschool_> 
-
-    *<_idgrade_>
-	clonevar idgrade = grade
-    label var idgrade "Grade ID"
-    *</_idgrade_>
-
+	
+	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
@@ -162,8 +158,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *<_score_assessment_subject_pv_>
     *foreach pv in 01 02 03 04 05 {
 	*Generating read_comp_score_pcnt: (Reading comprehension in Croele)
-	clonevar score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	gen score_egra_read = read_comp_score_pcnt*100
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -176,7 +172,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
 
     // TRAIT Vars:
-    local traitvars	"age male urban"
+    local traitvars	"age male urban idgrade"
 
     *<_age_>
     label var age "Learner age at time of assessment"
@@ -201,6 +197,11 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
+	
+    *<_idgrade_>
+	clonevar idgrade = grade
+    label var idgrade "Grade ID"
+    *</_idgrade_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */

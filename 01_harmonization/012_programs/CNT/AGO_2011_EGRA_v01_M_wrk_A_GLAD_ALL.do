@@ -126,6 +126,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+
 	
 	*<_year_>
 	gen year = "`year'"
@@ -163,7 +164,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 	}
 	egen read_comp_score = rowtotal(correctgoodmorningmaria correctsevenyears correctfiveyears correctsaurimo correctschool correctnurse correctfruits )
 	gen score_egra_read = (read_comp_score/7)*100
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 

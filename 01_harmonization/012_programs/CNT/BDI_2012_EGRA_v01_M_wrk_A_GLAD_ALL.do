@@ -84,14 +84,14 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(201.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2011.dta", clear
+           use "`input_dir'/2012.dta", clear
          }
          rename *, lower
          compress
-         save "`temp_dir'/2011.dta", replace
+         save "`temp_dir'/2012.dta", replace
 		
 		
 
@@ -120,12 +120,17 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner"
+    local idvars "idcntry_raw idregion year idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    clonevar idregion = province
+    label var idregion "Region"
+    *</_idregion_>
 	
 	*<_year_>
 	gen year = `year'
@@ -152,10 +157,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	egen read_comp_score = rowtotal(read_comp*)
-	gen score_egra_read = (read_comp_score/9)*100 
-	replace score_egra_read = (read_comp_score/5)*100 if missing(read_comp6)
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	egen read_comp_score = rowtotal(read_comp1  read_comp2 read_comp3 read_comp4 read_comp5)
+	gen score_egra_read = (read_comp_score/5)*100 
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -177,8 +181,6 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     *<_age_> 
-	drop age
-	clonevar age = age_eleve
     label var age "Learner age at time of assessment"
     *</_age_>
 
@@ -197,8 +199,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
     *<_male_>
     gen male = .
-	replace male=0 if fille=="Oui"
-	replace male=0 if fille=="Non"
+	replace male=0 if fille==1
+	replace male=1 if fille==0
 	label define male 1 "male" 0 "female"
     label var male "Learner gender is male/female"
 	label values male male
@@ -207,7 +209,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight "
-	
+	*from old do file: Data is svyset but svy variable IPROINCLU is not available. Other svy variables like strate_base also not available.
 
 	
 	*<_Nationally_representative_> 
@@ -224,7 +226,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 	*<_Regionally_representative_>
 
     *<_learner_weight_> 
-    gen learner_weight  = iproinclu
+    gen learner_weight  = 1
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
@@ -233,7 +235,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     label var su1 "Primary sampling unit"
     *</_learner_weight_> */
 	
-	*<_strata1_>
+	/*<_strata1_>
 	clonevar strata1 =strate_base
     label var strata1 "Strata 1"
     *</_learner_weight_>
@@ -280,7 +282,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 	svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
-
+*/
     *---------------------------------------------------------------------------
     * 4) ESCS and other calculations
     *---------------------------------------------------------------------------

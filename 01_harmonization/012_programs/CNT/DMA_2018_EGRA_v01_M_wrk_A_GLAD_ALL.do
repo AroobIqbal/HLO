@@ -156,20 +156,16 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	encode a2q1, generate (a2q1_n)
-	encode a2q2, generate (a2q2_n)
-	encode a2q3, generate (a2q3_n)
-	encode a2q4, generate (a2q4_n)
-	encode a2q5, generate (a2q5_n)
-	replace a2q1_n =0 if a2q1_n==.
-	replace a2q2_n=0 if a2q2_n==.
-	replace a2q3_n=0 if a2q3_n==.
-	replace a2q4_n=0 if a2q4_n==.
-	replace a2q5_n=0 if a2q5_n==.
-	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q4_n a2q5_n)
-	gen read_comp_score_pcnt=sum/5*10
+	replace a2q1 ="0" if a2q1=="3" | a2q1=="notAsked" | a2q1=="" 
+	replace a2q2="0" if a2q2=="3" | a2q2=="notAsked" | a2q2=="" 
+	replace a2q3="0" if a2q3=="3" | a2q3=="notAsked" | a2q3=="" 
+	replace a2q4="0" if a2q4=="3" | a2q4=="notAsked" | a2q4=="" 
+	replace a2q5="0" if a2q5=="3" | a2q5=="notAsked" | a2q5=="" 
+	destring a2q*, replace
+	egen sum = rowtotal(a2q1 a2q2 a2q3 a2q4 a2q5)
+	gen read_comp_score_pcnt=sum/5*100
 	gen score_egra_read = read_comp_score_pcnt
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 

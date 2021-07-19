@@ -164,9 +164,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 	replace a2q3_n=0 if a2q3_n==.
 	replace a2q4_n=0 if a2q4_n==.
 	replace a2q5_n=0 if a2q5_n==.
-	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q3_n a2q4_n a2q5_n)
+	egen sum = rowtotal(a2q1_n a2q2_n a2q3_n a2q4_n a2q5_n)
 	gen score_egra_read=sum/5*100
-    label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
 
