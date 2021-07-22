@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "LBR"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2013"  /* 2015 */
+local region      = "MLI"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2015"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -82,14 +82,14 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2015.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2013.dta", clear
+           use "`input_dir'/2015.dta", clear
          }
 		rename *, lower
          compress
-         save "`temp_dir'/2013.dta", replace
+         save "`temp_dir'/2015.dta", replace
 		
 		
 
@@ -128,13 +128,11 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idcntry_raw_>
 	
 	*<_idregion_>
-    decode county, gen(idregion)
-	replace idregion = "-99" if idregion== ""
+    clonevar idregion= region_name
     label var idregion "Region"
     *</_idregion_>
 	
 	*<_year_>
-	replace year = 2013 if year == .
 	label var year "Year"
 	*</_year_>
 

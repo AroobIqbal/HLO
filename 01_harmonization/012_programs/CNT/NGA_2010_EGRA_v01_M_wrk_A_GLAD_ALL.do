@@ -5,7 +5,7 @@
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
 local region      = "NGA"/* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2014"  /* 2015 */
+local year        = "2010"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -84,14 +84,14 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(nas.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2010.dta) `shortcut')
          }
          else {
-           use "`input_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", clear
+           use "`input_dir'/2010.dta", clear
          }
          rename *, lower
          compress
-         save "`temp_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", replace
+         save "`temp_dir'/2010.dta", replace
 		
 		
 
@@ -122,7 +122,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idlearner"
+    local idvars "idcntry_raw year idregion idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "NGA"
@@ -134,9 +134,13 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 	label var year "Year"
 	*</_year_>
 
+	*<_idregion_>
+    clonevar idregion= district
+    label var idregion "Region"
+    *</_idregion_>*/
 
     *<_idschool_>
-	encode school_code, gen (idschool)
+	clonevar idschool= school_code
     label var idschool "School ID"
     *</_idschool_>
 
@@ -145,22 +149,18 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *</_idclass_>*/
 
     *<_idlearner_>
-	encode id, gen (idlearner)
+	clonevar idlearner= id
     label var idlearner "Learner ID"
     *</_idlearner_>
 
     * Drop any value labels of idvars, to be okay to append multiple surveys
-    foreach var of varlist year idschool idgrade idlearner {
-      label values `var' .
-    }
 
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	replace e_read_comp_score_pcnt = 0 if missing(e_read_comp_score_pcnt) & idgrade == 3
-	gen score_egra_read = e_read_comp_score_pcnt
+	clonevar score_egra_read = read_comp_score_pcnt
 	label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *foreach pv in 01 02 03 04 05 {
     *}
@@ -199,14 +199,13 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *</_male_>
 	
 	*<_idgrade_> - From report
-	gen idgrade = 2 if grade == 2
-	replace idgrade = 3 if inlist(grade,3,4)
+	clonevar idgrade = grade
     label var idgrade "Grade ID"
     *</_idgrade_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 national_level nationally_representative regionally_representative"
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 /*Original survey set specifications:
   pweight: wt_final
           VCE: linearized
@@ -229,7 +228,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 1
+	gen regionally_representative = 0
 	*<_Regionally_representative_>
 
 
@@ -238,12 +237,12 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_su1_>
+    /*<_su1_>
     encode stage1, gen(su1)  
     label var su1 "Primary sampling unit"
     *</_su1_>*/
 	
-	*<_strata1_>
+	/*<_strata1_>
     label var strata1 "Strata 1"
     *</_strata1_>
 	
@@ -251,7 +250,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var fpc1 "fpc 1"
     *</_fpc1_>*/
 
-	*<_su2_>
+	/*<_su2_>
 	encode stage2, gen(su2)
     label var su2 "Sampling unit 2"
     *</_su2_>
@@ -260,7 +259,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var strata2 "Strata 2"
     *</_strata2_>*/
 
-	*<_fpc2_>
+	/*<_fpc2_>
     label var fpc2 "fpc 2"
     *</_fpc2_>*/
 
@@ -272,11 +271,9 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 	
-	foreach l in su1 su2 {
-      label drop `l'
-    }
 
-	svyset su1 [pw=learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2)
+
+	svyset [pw=learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

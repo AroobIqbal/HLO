@@ -1,17 +1,16 @@
-
 *=========================================================================*
 * GLOBAL LEARNING ASSESSMENT DATABASE (GLAD)
-* Project information at: https://github.com/worldbank/
+* Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "NGA"/* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2014"  /* 2015 */
+local region      = "MMR"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2016"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
-local ttl_info    = "Syedah Aroob Iqbal" /* no need to change here */
-local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change date*/
+local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
+local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -75,23 +74,22 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
 
+
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
-
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
+	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(nas.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2016.dta) `shortcut')
          }
          else {
-           use "`input_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", clear
+           use "`input_dir'/2016.dta", clear
          }
-         rename *, lower
+		rename *, lower
          compress
-         save "`temp_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", replace
+         save "`temp_dir'/2016.dta", replace
 		
 		
 
@@ -125,44 +123,47 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "NGA"
+    gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
 	
+	/*<_idregion_>
+    clonevar idregion= region_name
+    label var idregion "Region"
+    *</_idregion_>*/
+	
 	*<_year_>
-	*gen year = 2014
+	gen year = `year'
 	label var year "Year"
 	*</_year_>
 
-
-    *<_idschool_>
-	encode school_code, gen (idschool)
+   *<_idschool_> 
+	gen idschool = school_id
     label var idschool "School ID"
-    *</_idschool_>
-
-    /*<_idclass_> - Information not available 
-    label var idclass "Class ID"
-    *</_idclass_>*/
+    *<_idschool_> */
 
     *<_idlearner_>
-	encode id, gen (idlearner)
+	gen idlearner = _n
     label var idlearner "Learner ID"
     *</_idlearner_>
 
-    * Drop any value labels of idvars, to be okay to append multiple surveys
-    foreach var of varlist year idschool idgrade idlearner {
+    /* Drop any value labels of idvars, to be okay to append multiple surveys
+    foreach var of local idvars {
       label values `var' .
-    }
+    }*/
 
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	replace e_read_comp_score_pcnt = 0 if missing(e_read_comp_score_pcnt) & idgrade == 3
-	gen score_egra_read = e_read_comp_score_pcnt
-	label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
-    *foreach pv in 01 02 03 04 05 {
+	foreach var of varlist egst6brc* {
+	replace `var' = 0 if `var' == 444 | `var' == 999
+}
+	egen read_comp_score = rowtotal(egst6brc*)
+	gen read_comp_score_pcnt = (read_comp_score/6)*100
+	gen score_egra_read = read_comp_score_pcnt
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -175,94 +176,109 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 
 
     // TRAIT Vars:
-    local traitvars	"male idgrade"
+    local traitvars	"age male idgrade"
 
-    /*<_age_> -Not available
-    *clonevar age = std_age	
+    *<_age_>
+    gen age = 2015-eg0fyear1	
     label var age "Learner age at time of assessment"
-    *</_age_>*/
+    *</_age_>
 
-    /*<_urban_> - Urban not available
-    *gen byte urban = (inlist(acbg05a, 1, 2, 3, 4, 5)) if !missing(acbg05a) & acbg05a != 9
+   /*<_urban_> - Urban not available
+	gen urban = .
+	replace urban= 1 if urbanrural== "U"
+	replace urban =0 if urbanrural=="R"
+	label define urban 1 "urban" 0 "rural", replace
+	label var urban urban
     label var urban "School is located in urban/rural area"
-    *</_urban_>
+    *</_urban_>*/
 
-    *<_urban_o_>
+    /*<_urban_o_>
     *decode acbg05a, g(urban_o)
     label var urban_o "Original variable of urban: population size of the school area"
     *</_urban_o_>*/
 
     *<_male_>
-	gen male = 1 if female == 0
-	replace male = 0 if female == 1
+    gen byte male = .
+	replace male = 0 if eg14gen==1
+	replace male = 1 if eg14gen==0
+	label define male 1 "male" 0 "female", replace
+	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 	
-	*<_idgrade_> - From report
-	gen idgrade = 2 if grade == 2
-	replace idgrade = 3 if inlist(grade,3,4)
+    *<_idgrade_>
+	gen idgrade = eg10gd
     label var idgrade "Grade ID"
     *</_idgrade_>
 
-
+    /*<_idclass_> - Information not available 
+    label var idclass "Class ID"
+    *</_idclass_>*/
+	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 national_level nationally_representative regionally_representative"
-/*Original survey set specifications:
-  pweight: wt_final
-          VCE: linearized
-  Single unit: scaled
-     Strata 1: strata1
-         SU 1: stage1
-        FPC 1: fpc1
-     Strata 2: strata2
-         SU 2: stage2
-        FPC 2: fpc2
-*/
-
-		*<_Nationally_representative_> 
+    local samplevars "learner_weight "
+	
+	*<_Nationally_representative_> 
 	gen national_level = 0
 	*</_Nationally_representative_>
 	
-	*<_Nationally_representative_> 
+		*<_Nationally_representative_> 
 	gen nationally_representative = 0
 	*</_Nationally_representative_>
-
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 1
+	gen regionally_representative = 0
 	*<_Regionally_representative_>
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = wt_final
+    gen learner_weight  = 1
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_su1_>
-    encode stage1, gen(su1)  
+    /*<_psu_>
+    clonevar su1  = schid
     label var su1 "Primary sampling unit"
-    *</_su1_>*/
+    *</_psu_>
 	
 	*<_strata1_>
+	clonevar strata1  = strataid
     label var strata1 "Strata 1"
-    *</_strata1_>
+    *</_strata1_> 
 	
-	*<_fpc1_>
+	/*<_fpc1_>
+	clonevar fpc1= schoolsinstratum
     label var fpc1 "fpc 1"
-    *</_fpc1_>*/
+    *</_fpc1_>
 
 	*<_su2_>
-	encode stage2, gen(su2)
+	clonevar su2 = _n
     label var su2 "Sampling unit 2"
     *</_su2_>
 	
 	*<_strata2_>
-    label var strata2 "Strata 2"
-    *</_strata2_>*/
+	*clonevar strata2 = strat2
+    *label var strata2 "Strata 2"
+    *</_strata2_> 
 
 	*<_fpc2_>
+	clonevar fpc2= numberofpupilsenrolled
     label var fpc2 "fpc 2"
-    *</_fpc2_>*/
+    *</_fpc2_>
+	
+	/*<_su3_>
+	gen su3 = _n
+    label var su3 "Sampling unit 3"
+    *</_su3_>
+	
+	*<_strata3_>
+	*clonevar strata2 = 
+   * label var strata4 "Strata 4"
+    *</_strata3_> 
+
+	*<_fpc3_>
+    label var fpc3 "fpc 3"
+    *</_fpc3_>
 
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
@@ -270,15 +286,10 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
-    *</_jkrep_>*/
-	
-	foreach l in su1 su2 {
-      label drop `l'
-    }
-
-	svyset su1 [pw=learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2)
-
-    noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
+    *</_jkrep_>*/ */ */
+	svyset su1 [pweight = learner_weight],  strata(strata1) singleunit(scaled) vce(linearized)
+*/
+    noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 
     *---------------------------------------------------------------------------
@@ -294,7 +305,6 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"
-
 
     *---------------------------------------------------------------------------
     * 5) Bring WB countrycode & harmonization thresholds, and save dtas
@@ -321,9 +331,8 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     // Update valuevars to include newly created harmonized vars (from the ado)
     local valuevars : list valuevars | resultvars
 	
-	*The original dataset should have all the variables - Currently it doesnot have
-		*<_language_test_> 
-	gen language_test = "hausa"
+	*<_language_test_> 
+	gen language_test = "myanmar"
 	*<_language_test_>
 
 	
