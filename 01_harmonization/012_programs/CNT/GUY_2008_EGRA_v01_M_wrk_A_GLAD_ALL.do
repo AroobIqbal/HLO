@@ -274,7 +274,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-*/
+
 	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) singleunit(scaled)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

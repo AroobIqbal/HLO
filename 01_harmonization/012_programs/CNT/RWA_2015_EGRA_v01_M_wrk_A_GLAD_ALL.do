@@ -3,14 +3,14 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "UGA"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2009"  /* 2015 */
+local region      = "RWA"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2015"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change date*/
+local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -82,16 +82,14 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2014.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2015.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2009.dta", clear
+           use "`input_dir'/2015.dta", clear
          }
-		*rename (Age Library) (age2 library2)
 		rename *, lower
-        compress
-        save "`temp_dir'/2009.dta", replace
-		
+         compress
+         save "`temp_dir'/2015.dta", replace
 		
 
     noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
@@ -121,7 +119,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw idregion year idlearner"
+    local idvars "idcntry_raw idregion year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -129,24 +127,26 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idcntry_raw_>
 	
 	*<_idregion_>
-    decode region, gen(idregion)
-	*replace idregion = "-99" if idregion== ""
-    label var idregion "Region"
-    *</_idregion_>*/
+    gen idregion = state
+    label var idcntry_raw "Region"
+    *</_idregion_>
 	
 	*<_year_>
-	replace year = `year' if year==.
+	*replace year = 2013 if year == .
 	label var year "Year"
 	*</_year_>
 
-    /*<_idschool_> 
-	gen idschool = school_code
-	replace idschool = "-99" if idschool== ""
+   *<_idschool_> 
+	encode encrypted_school_code, gen(idschool)
     label var idschool "School ID"
     *<_idschool_> */
 
+    /*<_idclass_> - Information not available 
+    label var idclass "Class ID"
+    *</_idclass_>*/
+	
     *<_idlearner_>
-	gen idlearner = id
+	gen idlearner = _n
     label var idlearner "Learner ID"
     *</_idlearner_>
 
@@ -160,8 +160,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	gen score_egra_read = read_comp_score_pcnt*100
-    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
+	clonevar score_egra_read = read_comp_score_pcnt
+    label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -174,19 +174,21 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	 "age male idgrade"
+    local traitvars	"age male urban idgrade"
 
     *<_age_>
-    *gen age = age1	
+    *clonevar age = std_age	
     label var age "Learner age at time of assessment"
     *</_age_>
 
-    /*<_urban_> 
-	/*gen urban = .
-	replace urban= 1 if type== 2
-	replace urban =0 if type==1 */
+    *<_urban_> 
+	encode urban, gen(urban2)
+	drop urban
+	rename urban2 urban
+	replace urban=0 if urban==2
+	replace urban=1 if urban==3
 	label define urban 1 "urban" 0 "rural", replace
-	label var urban urban
+	label val urban urban
     label var urban "School is located in urban/rural area"
     *</_urban_>*/
 
@@ -197,111 +199,117 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
     *<_male_>
     gen byte male = .
-	replace male = 0 if female==1
-	replace male = 1 if female==0
+	replace male = 0 if female=="Female"
+	replace male = 1 if female=="Male"
 	label define male 1 "male" 0 "female", replace
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
-	
+
     *<_idgrade_>
-	gen idgrade = 3 if class == 2
-	replace idgrade = 2 if class == 1
+	gen idgrade = grade
     label var idgrade "Grade ID"
     *</_idgrade_>
 
-    /*<_idclass_> - Information not available 
-    label var idclass "Class ID"
-    *</_idclass_>*/
-	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su3 strata1  strata3 fpc1 fpc3"
+    local samplevars "learner_weight strata1 strata2 strata3 strata4 strata5 su1 su2 su3 su4 su5 fpc1 fpc2 fpc3 fpc4 fpc5"
 	
 	*<_Nationally_representative_> 
-	gen national_level = 0
+	gen national_level = 1
 	*</_Nationally_representative_>
 	
 		*<_Nationally_representative_> 
-	gen nationally_representative = 0
+	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 1
+	gen regionally_representative = 0
 	*<_Regionally_representative_>
 
 
     *<_learner_weight_>
-    gen learner_weight  = wt_final
+    gen learner_weight  = final_weight
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar su1  = district
+    *clonevar su1  = school_code
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
 	*<_strata1_>
-	*clonevar strata1  = strat1
+	*clonevar strata1  = treatment
     label var strata1 "Strata 1"
-    *</_strata1_> */
+    *</_strata1_> 
 	
 	*<_fpc1_>
-	*clonevar fpc1= schoolsinstratum
     label var fpc1 "fpc 1"
-    *</_fpc1_> */
+    *</_fpc1_>
 
-	/*<_su2_>
-	clonevar su2 = stage2
+	*<_su2_>
+	*clonevar su2 = id
     label var su2 "Sampling unit 2"
-    *</_su2_>*/
+    *</_su2_>
 	
 	*<_strata2_>
 	*clonevar strata2 = strat2
-   * label var strata2 "Strata 2"
+    label var strata2 "Strata 2"
     *</_strata2_> 
 
 	*<_fpc2_>
-	*clonevar fpc2= numberofpupilsenrolled
     label var fpc2 "fpc 2"
     *</_fpc2_>
 	
 	*<_su3_>
-	clonevar su3 = idlearner
+	*gen su3 = _n
     label var su3 "Sampling unit 3"
-    *</_su3_> */
+    *</_su3_>
 	
 	*<_strata3_>
-	*clonevar strata3 = strat3
-    label var strata3 "Strata 3"
+	*clonevar strata2 = 
+    label var strata3 "Strata 2"
     *</_strata3_> 
 
 	*<_fpc3_>
     label var fpc3 "fpc 3"
-    *</_fpc3_> */
-
-	/*<_su4_>
-	clonevar su4 = stage4
-    label var su4 "Sampling unit 4"
-    *</_su4_> */
+    *</_fpc3_>
 	
-	/*<_strata4_>
-	clonevar strata4 = strat4
+	*<_su4_>
+	*gen su4 = _n
+    label var su4 "Sampling unit 4"
+    *</_su4_>
+	
+	*<_strata4_>
+	*clonevar strata2 = 
     label var strata4 "Strata 4"
-    *</_strata3_> 
+    *</_strata4_> 
 
 	*<_fpc4_>
     label var fpc4 "fpc 4"
     *</_fpc4_>
 	
+	*<_su5_>
+	*gen su5 = _n
+    label var su5 "Sampling unit 5"
+    *</_su5_>
+	
+	*<_strata5_>
+	*clonevar strata2 = 
+    label var strata4 "Strata 4"
+    *</_strata5_> 
+
+	*<_fpc5_>
+    label var fpc5 "fpc 5"
+    *</_fpc5_>
+
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
     *</_jkzone_>
 
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
-    *</_jkrep_>*/ */ 
-	
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)
+    *</_jkrep_>*/ */
+	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, strata(strata3) fpc(fpc3)|| su4, strata(strata4) fpc(fpc4) || su5, strata(strata5) fpc(fpc5) singleunit(scaled)  
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -346,7 +354,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 	*<_language_test_> 
-	decode language, gen(language_test)
+	gen language_test = language
 	*<_language_test_>
 
 	

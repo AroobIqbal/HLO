@@ -276,6 +276,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
       label values `var' .
     }
 
+	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2 , strata(strata2) fpc(fpc2) || su3 , strata(strata3)singleunit(scaled) fpc(fpc3)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
