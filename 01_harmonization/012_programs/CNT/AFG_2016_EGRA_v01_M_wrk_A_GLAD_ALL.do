@@ -82,18 +82,19 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
 
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
+       	local list dari pushto
+    foreach file in `list' {
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2016.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2016_dari.dta", clear
+           use "`input_dir'/2016_`file'.dta", clear
          }
-         rename *, lower
+		rename *, lower
+		gen language= "`file'"
          compress
-         save "`temp_dir'/2016_dari.dta", replace
-		
-		
+         save "`temp_dir'/2016_`file'.dta", replace
+	}
 
     noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
 
@@ -105,8 +106,10 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     /* NOTE: the merge / append of all rawdata saved in temp in above step
        will vary slightly by assessment.
        See the two examples continuedw and change according to your needs */
-	   
-	   *Just one file
+	local list dari 
+    foreach file in `list' {
+	append using "`temp_dir'/2016_`file'.dta", force
+	}
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
 
 
@@ -161,8 +164,10 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
     *<_score_assessment_subject_pv_>
     *foreach pv in 01 02 03 04 05 {
-	clonevar score_egra_read = readcomp_pct
-      label var score_egra_read "Plausible value `pv': `assessment' score for reading"
+	clonevar score_egra_read_d = readcomp_pct
+     label var score_egra_read_d "Plausible value `pv': `assessment' score for reading dari"
+	 clonevar score_egra_read_p = rc_percent
+     label var score_egra_read_p "Plausible value `pv': `assessment' score for reading pushto"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -327,7 +332,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = "Dari"
+	gen language_test = language
 	*<_language_test_>
 
 	

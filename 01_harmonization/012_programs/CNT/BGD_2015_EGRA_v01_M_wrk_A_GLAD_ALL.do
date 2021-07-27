@@ -83,7 +83,6 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
     noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
 
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
 		local list CHT NNPS RCT
          foreach file in `list' {
 		 	if `from_datalibweb'==1 {
@@ -97,7 +96,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 		if (_rc == 0) {
 		rename Readpct readpct3
 }
-         rename *, lower
+         
+		 rename *, lower
          compress
          save "`temp_dir'/2015_`file'.dta", replace
 		}

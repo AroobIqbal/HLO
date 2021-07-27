@@ -91,6 +91,14 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 		rename *, lower
          compress
          save "`temp_dir'/2012_`file'.dta", replace
+		 
+		 *cleaning taken from the All do file
+		 noisily drop if grade==9 | missing(grade) 	// Observations that don't match documentation (grades 1-6)
+        foreach var of varlist sophy* {
+          destring `var', replace
+          *Assuming 9 is no response:
+          replace `var' = 0 if `var' == 9
+        }
 	}	
 		
 

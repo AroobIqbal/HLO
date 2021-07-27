@@ -179,10 +179,10 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	" male age urban"
+    local traitvars	" male age urban idgrade"
 	
-	*<_idgrade_> - From report
-	/*recode info_3 (1=2) (2=3) (3=4) (4=5), gen(idgrade)
+	*<_idgrade_> 
+	gen idgrade= 2
     label var idgrade "Grade"
     *</_idgrade_> */
 

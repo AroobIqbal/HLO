@@ -120,12 +120,19 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner"
+    local idvars "idcntry_raw year idlearner idregion"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    clonevar idregion = region
+	label define region 1 "Bandundu" 2 "Equateur" 3 "Orientale"
+	label values region region
+    label var idregion "Region"
+    *</_idregion_>*/
 	
 	*<_year_>
 	label var year "Year"

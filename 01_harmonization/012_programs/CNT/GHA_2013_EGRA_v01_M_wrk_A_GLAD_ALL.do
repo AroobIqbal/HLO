@@ -165,7 +165,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 	gen score_egra_read_e = e_read_comp_score_pcnt
 	gen score_egra_read_ghna = ghna_read_comp_score_pcnt
     label var score_egra_read_e "Percentage of correct reading comprehension questions for `assessment' in English"
-	label var score_egra_read_e "Percentage of correct reading comprehension questions for `assessment' in Ghanian local languages"
+	label var score_egra_read_ghna "Percentage of correct reading comprehension questions for `assessment' in Ghanian local languages"
     *}
     *</_score_assessment_subject_pv_>
 

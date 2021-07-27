@@ -223,14 +223,14 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
-	egen stratum = group(region school_gender) 
-    clonevar su1  = stratum
+    *<_psu_> 
+    clonevar su1  = idschool
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
 	*<_strata1_>
-	clonevar strata1  = region
+	egen stratum = group(region school_gender)
+	clonevar strata1  = stratum
     label var strata1 "Strata 1"
     *</_strata1_> 
 	

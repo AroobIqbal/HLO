@@ -183,7 +183,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // TRAIT Vars:
     local traitvars	"male age idgrade"
 	
-	*<_idgrade_> - From report
+	/*<_idgrade_> - From report
 	clonevar idgrade = _class
 	*replace idgrade  = class if idgrade==.
     label var idgrade "Grade"
