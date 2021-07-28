@@ -186,7 +186,13 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"age male total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
 
     *<_age_>
     *clonevar age = std_age	

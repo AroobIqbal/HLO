@@ -154,7 +154,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *</_idschool_>
 
     *<_idlearner_>
-	gen idlearner = masked_studentid
+	gen idlearner = _n
     label var idlearner "Learner ID"
     *</_idlearner_>
 
@@ -181,9 +181,15 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	"male age idgrade"
+    local traitvars	"male age idgrade total"
 	
-	/*<_idgrade_> - From report
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
+	
+	*<_idgrade_> - From report
 	clonevar idgrade = _class
 	*replace idgrade  = class if idgrade==.
     label var idgrade "Grade"

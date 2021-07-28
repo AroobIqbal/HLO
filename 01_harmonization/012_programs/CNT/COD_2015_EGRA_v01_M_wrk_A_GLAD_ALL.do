@@ -122,7 +122,13 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw idregion year idschool idlearner"
+    local idvars "idcntry_raw idregion year idschool idlearner total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 
     *<_idcntry_raw_>
     gen idcntry_raw = "COD"

@@ -172,7 +172,13 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	" male age urban idgrade"
+    local traitvars	" male age urban idgrade total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
 	
 	*<_idgrade_> 
 	gen idgrade = 2

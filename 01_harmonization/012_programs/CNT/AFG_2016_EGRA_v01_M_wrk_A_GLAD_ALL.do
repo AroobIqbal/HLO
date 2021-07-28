@@ -180,7 +180,13 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	"idgrade male age urban"
+    local traitvars	"idgrade male age urban total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 	
 	*<_idgrade_> - From report
 	recode info_3 (1=2) (2=3) (3=4) (4=5), gen(idgrade)

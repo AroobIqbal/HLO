@@ -54,7 +54,7 @@ save "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M/Data/Stata/`j'_2017_MICS_v01_M", rep
 *Running do files
 *-------------------------------------------------------------------------------
 use "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta",  clear
-keep if assessment== "MICS"
+keep if assessment== "EGRA" & region=="WLD"
 
 levelsof countrycode, local(country)
 
@@ -70,7 +70,7 @@ display "`c'"
 	levelsof year, local(yr)
 		foreach y of local yr {
 		*display "`c'" "`y'"
-		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_MICS_v0_wrk_A_GLAD_ALL"
+		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_EGRA_v01_M_wrk_A_GLAD_ALL"
 		}
 	restore
 	}	

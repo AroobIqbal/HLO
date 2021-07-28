@@ -177,7 +177,13 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male age idgrade"
+    local traitvars	"male age idgrade total"
+		
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 
     *<_idgrade_>
 	clonevar idgrade = grade
@@ -209,7 +215,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 fpc3 strata1 strata2 su1 su2 su3"
+    local samplevars "learner_weight fpc1 fpc2 fpc3 strata1 strata2 strata3 su1 su2 su3"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -225,18 +231,17 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    gen learner_weight  = wt_final
+    gen learner_weight  = wt_stage3
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
     *<_psu_>
-	egen stratum = group(region school_gender) 
-    clonevar su1  = stratum
+    clonevar su1  = stage1
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
 	*<_strata1_>
-	clonevar strata1  = region
+	*clonevar strata1  = region
     label var strata1 "Strata 1"
     *</_strata1_> 
 	
@@ -245,12 +250,12 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = teacher_id
+	clonevar su2 = stage2
     label var su2 "Sampling unit 2"
     *</_su2_>
 	
 	*<_strata2_>
-	clonevar strata2 = grade
+	*clonevar strata2 = grade
     label var strata2 "Strata 2"
     *</_strata2_> 
 
@@ -259,13 +264,13 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_fpc2_>
 	
 	*<_su3_>
-	gen su3 = _n
+	gen su3 = stage3
     label var su3 "Sampling unit 3"
     *</_su3_>
 	
 	*<_strata3_>
 	*clonevar strata2 = 
-   * label var strata4 "Strata 4"
+   label var strata3 "Strata 3"
     *</_strata3_> 
 
 	*<_fpc3_>
@@ -279,7 +284,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */
-	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, fpc(fpc3) singleunit(scaled) vce(linearized)
+	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, fpc(fpc3) strata(strata3) singleunit(scaled) vce(linearized)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 

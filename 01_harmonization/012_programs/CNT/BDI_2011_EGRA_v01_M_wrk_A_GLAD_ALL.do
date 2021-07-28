@@ -177,7 +177,13 @@ foreach var of varlist read_comp* {
 
 
     // TRAIT Vars:
-    local traitvars	"idgrade male age"
+    local traitvars	"idgrade male age total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
 	
 	*<_idgrade_> - From report
 	clonevar idgrade = classe_eleve

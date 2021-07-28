@@ -178,8 +178,14 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
 
     // TRAIT Vars:
-    local traitvars	"male"
+    local traitvars	"male total"
 
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
+	
     /*<_age_> -Not available
     *clonevar age = std_age	
     label var age "Learner age at time of assessment"

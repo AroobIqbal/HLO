@@ -166,7 +166,15 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 
     // TRAIT Vars:
-    local traitvars	"male age idgrade"
+    local traitvars	"male age idgrade total"
+	
+		
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
+	
 	
 	*<_idgrade_> - From report
 	clonevar idgrade = _class
