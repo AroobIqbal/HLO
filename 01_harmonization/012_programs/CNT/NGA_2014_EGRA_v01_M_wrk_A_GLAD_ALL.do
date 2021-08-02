@@ -150,7 +150,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *</_idlearner_>
 
     * Drop any value labels of idvars, to be okay to append multiple surveys
-    foreach var of varlist year idschool idgrade idlearner {
+    foreach var of varlist year idschool  idlearner {
       label values `var' .
     }
 
@@ -159,7 +159,7 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	replace e_read_comp_score_pcnt = 0 if missing(e_read_comp_score_pcnt) & idgrade == 3
+	replace e_read_comp_score_pcnt = 0 if missing(e_read_comp_score_pcnt) & grade == 3
 	gen score_egra_read = e_read_comp_score_pcnt
 	label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *foreach pv in 01 02 03 04 05 {

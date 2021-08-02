@@ -143,7 +143,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *<_idschool_> */
 
     *<_idlearner_>
-	gen idlearner = id
+	gen idlearner = _n
     label var idlearner "Learner ID"
     *</_idlearner_>
 

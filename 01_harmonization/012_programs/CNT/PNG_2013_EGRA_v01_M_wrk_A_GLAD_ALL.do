@@ -85,12 +85,12 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2010.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2015.dta", clear
+           use "`input_dir'/2013_WHP.dta", clear
          }
 		 rename Operator operator2
 		rename *, lower
          compress
-         save "`temp_dir'/2015.dta", replace
+         save "`temp_dir'/2013_WHP.dta", replace
 		
 		
 
@@ -295,7 +295,6 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
 */
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
-
     *---------------------------------------------------------------------------
     * 4) ESCS and other calculations
     *---------------------------------------------------------------------------
@@ -336,7 +335,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 	*<_language_test_> 
-	gen language_test = "english"
+	decode language, gen(language_test)
 	*<_language_test_>
 
 	

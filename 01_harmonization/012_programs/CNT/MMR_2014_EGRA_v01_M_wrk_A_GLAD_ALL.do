@@ -251,7 +251,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = _n
+	gen su2 = _n
     label var su2 "Sampling unit 2"
     *</_su2_>
 	

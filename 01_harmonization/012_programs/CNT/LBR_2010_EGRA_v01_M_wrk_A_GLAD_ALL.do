@@ -328,7 +328,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     local valuevars : list valuevars | resultvars
 	
 	*<_language_test_> 
-	clonevar language_test = language
+	gen language_test = "english"
 	*<_language_test_>
 
 	
