@@ -80,7 +80,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
+set seed 10051990
+set sortseed 10051990
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
@@ -172,7 +173,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male idgrade total"
+    local traitvars	"age male idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -211,7 +212,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1  fpc2"
+    local samplevars "learner_weight fpc1  fpc2 national_level nationally_representative regionally_representative"
 
 	
 	*<_Nationally_representative_> 
@@ -277,10 +278,20 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist exit_interview17a exit_interview17b exit_interview17c exit_interview17e exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17 {
+	tab `var'
+}
+mdesc exit_interview17a exit_interview17b exit_interview17c exit_interview17e exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17
+*Filling in missings:
+foreach var of varlist exit_interview17a exit_interview17b exit_interview17c exit_interview17e exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17 {
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt exit_interview17a_std exit_interview17b_std exit_interview17c_std exit_interview17e_std exit_interview17g_std exit_interview17h_std exit_interview17i_std exit_interview17j_std exit_interview17_std 
+pca exit_interview17a_std exit_interview17b_std exit_interview17c_std exit_interview17e_std exit_interview17g_std exit_interview17h_std exit_interview17i_std exit_interview17j_std exit_interview17_std
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

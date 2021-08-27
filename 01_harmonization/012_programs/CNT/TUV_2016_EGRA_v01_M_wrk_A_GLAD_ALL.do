@@ -73,7 +73,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 7th Feb, 2019"  /* chan
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -107,7 +108,6 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 7th Feb, 2019"  /* chan
 	   
 	   *Just one file
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
-
 
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
@@ -223,7 +223,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 7th Feb, 2019"  /* chan
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight nationally_representative regionally_representative"
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*gen wt1=pw1*pw2
 

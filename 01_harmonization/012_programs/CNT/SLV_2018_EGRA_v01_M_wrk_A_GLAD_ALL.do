@@ -74,7 +74,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -282,7 +283,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
       label values `var' .
     }
 
-	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2 , strata(strata2) fpc(fpc2) || su3 , strata(strata3)singleunit(scaled) fpc(fpc3)
+	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2 , strata(strata2) fpc(fpc2) || su3 , strata(strata3)  fpc(fpc3) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

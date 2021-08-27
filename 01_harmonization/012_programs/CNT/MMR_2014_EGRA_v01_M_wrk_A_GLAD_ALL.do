@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -171,7 +172,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male idgrade total"
+    local traitvars	"male idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -215,7 +216,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 su1 su2 strata1"
+    local samplevars "learner_weight fpc1 fpc2 su1 su2 strata1 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -286,7 +287,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ */
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) singleunit(scaled) 
+
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) singleunit(scaled) vce(linearized)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -297,10 +299,21 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist sq20_1radio sq20_2television sq20_3bed sq20_4table sq20_5chair sq20_6clock sq20_7mobile_phone sq20_8bike sq20_9motorcycle sq20_10canoe_boat sq20_11implement_animal sq20_12implement_motorized sq20_13largeanimal sq20_14cookingstove {
+	tab `var'
+}
+*Creating dummies of categorical variables:
+tab sq20_14cookingstove, gen(sq20_14cookingstove_d)
+
+alphawgt sq20_1radio sq20_2television sq20_3bed sq20_4table sq20_5chair sq20_6clock sq20_7mobile_phone sq20_8bike sq20_9motorcycle sq20_10canoe_boat sq20_11implement_animal sq20_12implement_motorized sq20_13largeanimal sq20_14cookingstove_d2 sq20_14cookingstove_d3 sq20_14cookingstove_d4 sq20_14cookingstove_d5 [weight = learner_weight], detail item
+foreach var of varlist sq20_1radio sq20_2television sq20_3bed sq20_4table sq20_5chair sq20_6clock sq20_7mobile_phone sq20_8bike sq20_9motorcycle sq20_10canoe_boat sq20_11implement_animal sq20_12implement_motorized sq20_13largeanimal sq20_14cookingstove_d2 sq20_14cookingstove_d3 sq20_14cookingstove_d4 sq20_14cookingstove_d5 {
+	egen `var'_std = std(`var')
+}
+
+pca sq20_1radio_std sq20_2television_std sq20_3bed_std sq20_4table_std sq20_5chair_std sq20_6clock_std sq20_7mobile_phone_std sq20_8bike_std sq20_9motorcycle_std sq20_10canoe_boat_std sq20_11implement_animal_std sq20_12implement_motorized_std sq20_13largeanimal_std sq20_14cookingstove_d2_std sq20_14cookingstove_d3_std sq20_14cookingstove_d4_std sq20_14cookingstove_d5_std [weight = learner_weight]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

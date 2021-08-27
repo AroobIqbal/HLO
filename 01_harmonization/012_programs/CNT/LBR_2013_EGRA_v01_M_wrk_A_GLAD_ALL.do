@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -217,7 +218,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight"
+    local samplevars "learner_weight  strata1 strata2 su1 su2 fpc1 fpc2 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -233,18 +234,19 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    gen learner_weight  = 1
+    gen learner_weight  = wt_final
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    /*<_psu_>
+	
+    *<_psu_>
     clonevar su1  = school_code
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
 	*<_strata1_>
 	*clonevar strata1  = treatment
-    *label var strata1 "Strata 1"
+    label var strata1 "Strata 1"
     *</_strata1_> 
 	
 	*<_fpc1_>
@@ -258,7 +260,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 	
 	*<_strata2_>
 	*clonevar strata2 = strat2
-    *label var strata2 "Strata 2"
+    label var strata2 "Strata 2"
     *</_strata2_> 
 
 	*<_fpc2_>
@@ -286,7 +288,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ 
-	svyset su1 [pweight = learner_weight], fpc(fpc1) || su2, fpc(fpc2) singleunit(scaled) */
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) vce(linearized) singleunit(scaled) 
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 

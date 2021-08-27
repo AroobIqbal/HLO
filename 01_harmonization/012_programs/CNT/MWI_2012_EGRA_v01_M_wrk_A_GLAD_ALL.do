@@ -73,8 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -219,7 +219,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
+	*missing school_code to complete svyset
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -302,10 +303,25 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist exit_interview2 exit_interview3 exit_interview4 exit_interview5 exit_interview6 exit_interview7 exit_interview8 exit_interview9 exit_interview10 exit_interview15 exit_interview18 exit_interview19 {
+	tab `var'
+	replace `var' = . if inlist(`var',8,9)
+}
+mdesc exit_interview2 exit_interview3 exit_interview4 exit_interview5 exit_interview6 exit_interview7 exit_interview8 exit_interview9 exit_interview10 exit_interview15 exit_interview18 exit_interview19
+foreach var of varlist exit_interview2 exit_interview3 exit_interview4 exit_interview5 exit_interview6 exit_interview7 exit_interview8 exit_interview9 exit_interview10 exit_interview15 {
+	bysort district : egen `var'_mean = mean(`var')
+	bysort district : egen `var'_count = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+
+alphawgt exit_interview2_std exit_interview3_std exit_interview4_std exit_interview5_std exit_interview6_std exit_interview7_std exit_interview8_std exit_interview9_std exit_interview10_std exit_interview15_std, detail item
+pca exit_interview2_std exit_interview3_std exit_interview4_std exit_interview5_std exit_interview6_std exit_interview7_std exit_interview8_std exit_interview9_std exit_interview10_std exit_interview15_std 
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

@@ -73,6 +73,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -172,7 +174,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
 
     // TRAIT Vars:
-    local traitvars	" male idgrade total"
+    local traitvars	" male idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -209,7 +211,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *</_idgrade_>
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight"
+    local samplevars "learner_weight su1 su2 strata1 strata2 fpc1 fpc2 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -244,7 +246,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *</_fpc1_>
 
 	*<_su2_>
-	egen su2 = group(grade male) 
+	gen su2 = id
     label var su2 "Sampling unit 2"
     *</_su2_>
 	
@@ -264,8 +266,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-
-	svyset su1 [pw=learner_weight], strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2)
+	
+	svyset su1 [pw=learner_weight], strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2) vce(linearized) singleunit(scaled)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -275,8 +277,22 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist exit_interview24 exit_interview27a exit_interview27b exit_interview27c exit_interview27f exit_interview27g exit_interview27h exit_interview27i exit_interview27j exit_interview27k exit_interview27l exit_interview27m_1 exit_interview27m_2 exit_interview27m_3 exit_interview27m_4 exit_interview27n_1 exit_interview27n_2 exit_interview27n_3 exit_interview27o_1 exit_interview27o_2 exit_interview27o_3 exit_interview27o_5 exit_interview27o_6 exit_interview27o_7 exit_interview27o_8 exit_interview27o_9 {
+	replace `var' = . if `var' == 9
+	bysort strata1 school_code: egen `var'_mean = mean(`var')
+	bysort strata1 school_code: egen `var'_count = count(`var')
+	bysort strata1: egen `var'_mean_s = mean(`var')
+	bysort strata1: egen `var'_count_s = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_s if missing(`var') & `var'_count_s > 10 & !missing(`var'_count_s)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt exit_interview24_std exit_interview27a_std exit_interview27b_std exit_interview27c_std exit_interview27f_std exit_interview27g_std exit_interview27h_std exit_interview27i_std exit_interview27j_std exit_interview27k_std exit_interview27l_std exit_interview27m_1_std exit_interview27m_2_std exit_interview27m_3_std exit_interview27m_4_std  exit_interview27n_1_std exit_interview27n_2_std exit_interview27n_3_std  exit_interview27o_1_std exit_interview27o_2_std exit_interview27o_3_std exit_interview27o_5_std exit_interview27o_6_std exit_interview27o_7_std exit_interview27o_8_std exit_interview27o_9_std [weight = wt_final], detail item std
+pca exit_interview24_std exit_interview27a_std exit_interview27b_std exit_interview27c_std exit_interview27f_std exit_interview27g_std exit_interview27h_std exit_interview27i_std exit_interview27j_std exit_interview27k_std exit_interview27l_std exit_interview27m_1_std exit_interview27m_2_std exit_interview27m_3_std exit_interview27m_4_std  exit_interview27n_1_std exit_interview27n_2_std exit_interview27n_3_std  exit_interview27o_1_std exit_interview27o_2_std exit_interview27o_3_std exit_interview27o_5_std exit_interview27o_6_std exit_interview27o_7_std exit_interview27o_8_std exit_interview27o_9_std  [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

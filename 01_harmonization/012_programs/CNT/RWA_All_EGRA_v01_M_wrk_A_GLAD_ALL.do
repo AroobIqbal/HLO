@@ -20,7 +20,8 @@ local dofile_info = "last modified by Diana Goldemberg in October 8, 2019"
 * 4) ESCS and other calculations (by Aroob, from Feb 2019)
 * 5) Bring WB countrycode & harmonization thresholds, and save dtas
 *=========================================================================*
-
+set seed 10051990
+set sortseed 10051990
 *quietly {
 
   *---------------------------------------------------------------------------

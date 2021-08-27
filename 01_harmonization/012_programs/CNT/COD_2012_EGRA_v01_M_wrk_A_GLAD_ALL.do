@@ -74,6 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -176,7 +178,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"idgrade male age total"
+    local traitvars	"idgrade male age total escs"
 		
 	*<_total_> 
 	gen total = 1 
@@ -219,9 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
-	
-
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -241,15 +241,12 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-   /* *<_psu_>
-    clonevar su1  = stage1
+   *<_psu_>
+    clonevar su1  = school_code
     label var su1 "Primary sampling unit"
     *</_learner_weight_>
 	
 	*<_strata1_>
-	encode strata1, gen(strata1e)
-	drop strata1
-	ren strata1e strata1
     label var strata1 "Strata 1"
     *</_learner_weight_>
 	
@@ -258,7 +255,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_learner_weight_>
 
 	*<_su2_>
-	clonevar su2 = stage2
+	clonevar su2 = id
     label var su2 "Sampling unit 2"
     *</_learner_weight_>
 	
@@ -270,7 +267,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var fpc2 "fpc 2"
     *</_learner_weight_>
 	
-	*<_su3_>
+	/*<_su3_>
 	clonevar su3 = stage3
     label var su3 "Sampling unit 2"
     *</_learner_weight_>
@@ -292,10 +289,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-*/
-	svyset [pweight= learner_weight]
+	svyset su1 [pweight= learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
-
 
     *---------------------------------------------------------------------------
     * 4) ESCS and other calculations
@@ -303,10 +298,19 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 exit_interview19 {
+	replace `var' = . if `var' == 9
+	egen `var'_mean = mean(`var')
+	replace `var' = `var'_mean if missing(`var')
+}
+
+alphawgt exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 exit_interview19 [weight = wt_final], detail std item label  // cronbach alpha = 0.6487
+foreach var of varlist exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 exit_interview19 {
+	egen `var'_std = std(`var')
+}
+pca *_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

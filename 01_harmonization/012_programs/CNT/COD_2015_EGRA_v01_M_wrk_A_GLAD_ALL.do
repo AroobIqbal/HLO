@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -301,7 +302,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	svyset stage1 [pweight= learner_weight], strata(strata1) fpc(fpc1) || stage2, strata(strata2) fpc(fpc2) || stage3, strata(strata3) fpc(fpc3) singleunit(scaled) vce(linearized)
+	svyset su1 [pweight= learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, strata(strata3) fpc(fpc3) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -176,7 +177,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	 "age male urban idgrade total"
+    local traitvars	 "age male urban idgrade total escs"
 
 	*<_total_> 
 	gen total = 1 
@@ -222,8 +223,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su2 su4 strata1 strata2 strata4 fpc1 fpc2 fpc4"
-	
+    local samplevars "learner_weight su1 su2 su4 strata1 strata2 strata4 fpc1 fpc2 fpc4 national_level nationally_representative regionally_representative"
+		
 	*<_Nationally_representative_> 
 	gen national_level = 1
 	*</_Nationally_representative_>
@@ -308,8 +309,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ 
 	
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) || su4, fpc(fpc4) strata(strata4) singleunit(scaled)
-	*/
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) || su4, fpc(fpc4) strata(strata4) singleunit(scaled) vce(linearized)
+	
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 
@@ -319,10 +320,38 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist p_18 p_21 p_22 p_23 p_24 p_25a p_25b p_25c p_25d p_25e p_25f p_25g p_25h p_25i {
+	tab `var'
+	replace `var' = . if `var' == 888
+}
+*Creating dummies from categorical variables:
+foreach var of varlist p_22 p_23 p_24 {
+	tab `var', gen(`var'_d)
+}
+*Removing dummies for others: p_22_d6 p_23_d6 p_24_d5
+drop p_22_d6 p_23_d6 p_24_d5
+*Missings:
+mdesc p_18 p_21 p_22 p_23 p_24 p_25a p_25b p_25c p_25d p_25e p_25f p_25g p_25h p_25i
+*Filling in missings:
+foreach var of varlist p_18 p_21 p_22_d* p_23_d* p_24_d* p_25a p_25b p_25c p_25d p_25e p_25f p_25g p_25h p_25i {
+	bysort region school_code : egen `var'_mean = mean(`var')
+	bysort region school_code: egen `var'_count = count(`var')
+	
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+
+	egen `var'_mean_cnt = mean(`var')
+	
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 10 & !missing(`var'_count)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt p_18_std p_21_std p_22_d*_std p_23_d*_std p_24_d*_std p_25a_std p_25b_std p_25c_std p_25d_std p_25e_std p_25f_std p_25g_std p_25h_std p_25i_std [weight = learner_weight], detail item
+pca p_18_std p_21_std p_22_d*_std p_23_d*_std p_24_d*_std p_25a_std p_25b_std p_25c_std p_25d_std p_25e_std p_25f_std p_25g_std p_25h_std p_25i_std [weight = learner_weight]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

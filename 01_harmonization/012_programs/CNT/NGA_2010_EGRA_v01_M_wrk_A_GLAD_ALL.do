@@ -74,6 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -212,17 +214,6 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight national_level nationally_representative regionally_representative"
-/*Original survey set specifications:
-  pweight: wt_final
-          VCE: linearized
-  Single unit: scaled
-     Strata 1: strata1
-         SU 1: stage1
-        FPC 1: fpc1
-     Strata 2: strata2
-         SU 2: stage2
-        FPC 2: fpc2
-*/
 
 		*<_Nationally_representative_> 
 	gen national_level = 0
@@ -243,12 +234,13 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    /*<_su1_>
-    encode stage1, gen(su1)  
+    *<_su1_>
+	clonevar su1= district
     label var su1 "Primary sampling unit"
     *</_su1_>*/
 	
-	/*<_strata1_>
+	*<_strata1_>
+	clonevar strata1=reg_treat
     label var strata1 "Strata 1"
     *</_strata1_>
 	
@@ -256,18 +248,32 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     label var fpc1 "fpc 1"
     *</_fpc1_>*/
 
-	/*<_su2_>
-	encode stage2, gen(su2)
+	*<_su2_>
+	clonevar su2= school_code
     label var su2 "Sampling unit 2"
     *</_su2_>
 	
 	*<_strata2_>
-    label var strata2 "Strata 2"
+    *label var strata2 "Strata 2"
     *</_strata2_>*/
 
-	/*<_fpc2_>
+	*<_fpc2_>
     label var fpc2 "fpc 2"
     *</_fpc2_>*/
+	
+	*<_su3_>
+	gen su3 = id
+    label var su3 "Sampling unit 3"
+    *</_su3_>
+	
+	*<_strata3_>
+	clonevar strata3 = female
+   label var strata3 "Strata 3"
+    *</_strata3_> 
+
+	*<_fpc3_>
+    label var fpc3 "fpc 3"
+    *</_fpc3_>
 
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
@@ -276,10 +282,8 @@ local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change d
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-	
 
-
-	svyset [pw=learner_weight]
+	svyset su1 [pw=learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) || su3, fpc(fpc3) strata(strata3) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

@@ -74,6 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -215,9 +217,9 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	*from old do file: Data is svyset but svy variable IPROINCLU is not available. Other svy variables like strate_base also not available.
-
+	
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1

@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
 
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -221,8 +222,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su3 strata1  strata3 fpc1 fpc3"
-	
+    local samplevars "learner_weight su1 su3 strata1  strata3 fpc1 fpc3 national_level nationally_representative regionally_representative"
+
 	*<_Nationally_representative_> 
 	gen national_level = 0
 	*</_Nationally_representative_>
@@ -256,8 +257,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     label var fpc1 "fpc 1"
     *</_fpc1_> */
 
-	/*<_su2_>
-	clonevar su2 = stage2
+	*<_su2_>
+	clonevar su2 = emis
     label var su2 "Sampling unit 2"
     *</_su2_>*/
 	
@@ -306,8 +307,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ 
-	
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)
+
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2)  || su3, fpc(fpc3) strata(strata3) singleunit(scaled) vce(linearized)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 

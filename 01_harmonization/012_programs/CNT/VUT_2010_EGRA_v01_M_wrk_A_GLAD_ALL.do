@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -174,7 +175,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	 "age male  idgrade total"
+    local traitvars	 "age male  idgrade total escs"
 
 	*<_total_> 
 	gen total = 1 
@@ -220,7 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -317,10 +318,33 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist question18 question19 question20 question21 question22 question23 question24 question25 {
+	tab `var'
+	replace `var' = . if inlist(`var',9,99)
+}
+*Missings:
+mdesc question18 question19 question20 question21 question22 question23 question24 question25
+*question 25 has around 50% missing. dropped.
+*Filling missings:
+foreach var of varlist question18 question19 question20 question21 question22 question23 question24 {
+	bysort region district school_code: egen `var'_mean = mean(`var')
+	bysort region district school_code: egen `var'_count = count(`var')
+	bysort region district : egen `var'_mean_d = mean(`var')
+	bysort region district : egen `var'_count_d = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_d if missing(`var') & `var'_count_d > 7 & !missing(`var'_count_d)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt question18_std question19_std question20_std question21_std question22_std question23_std question24_std , detail item
+pca question18_std question19_std question20_std question21_std question22_std question23_std question24_std 
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

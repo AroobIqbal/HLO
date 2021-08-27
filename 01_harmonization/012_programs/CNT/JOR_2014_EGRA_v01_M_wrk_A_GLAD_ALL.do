@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -177,7 +178,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male age idgrade total"
+    local traitvars	"male age idgrade total escs"
 		
 	*<_total_> 
 	gen total = 1 
@@ -215,7 +216,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 fpc3 strata1 strata2 strata3 su1 su2 su3"
+    local samplevars "learner_weight fpc1 fpc2 fpc3 strata1 strata2 strata3 su1 su2 su3 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -295,10 +296,35 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist s25 s30_1 s30_2 s30_3 s30_4 s30_5 s30_6 s30_7 s30_8 s39 s40 s41 {
+	tab `var'
+	replace `var' = . if inlist(`var',888,6)
+}
+*Creating dummies for categorical variables:
+foreach var of varlist s39 s40 s41 {
+	tab `var', gen(`var'_d)
+}
+*Missings:
+mdesc s25 s30_1 s30_2 s30_3 s30_4 s30_5 s30_6 s30_7 s30_8 s39_d* s40_d* s41_d*
+*s25 has 73%missing values. Dropped
+foreach var of varlist s30_1 s30_2 s30_3 s30_4 s30_5 s30_6 s30_7 s30_8 s39_d* s40_d* s41_d* {
+	bysort region district school_code: egen `var'_mean = mean(`var')
+	bysort region district school_code: egen `var'_count = count(`var')
+	bysort region district : egen `var'_mean_d = mean(`var')
+	bysort region district : egen `var'_count_d = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_d if missing(`var') & `var'_count_d > 7 & !missing(`var'_count_d)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt s30_1_std s30_2_std s30_3_std s30_4_std s30_5_std s30_6_std s30_7_std s30_8_std s39_d*_std s40_d*_std s41_d*_std [weight = learner_weight], detail item gen(HOMEPOS)
+pca s30_1_std s30_2_std s30_3_std s30_4_std s30_5_std s30_6_std s30_7_std s30_8_std s39_d*_std s40_d*_std s41_d*_std [weight = learner_weight]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

@@ -74,6 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
 
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -176,7 +178,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male urban idgrade total"
+    local traitvars	"age male urban idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -215,7 +217,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -295,10 +297,32 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist question28 question29 question30 question31 question32 question33 question34 question35 question36 question37 question38 question39 question40 question41 question42 question43 question44 question45 question46 {
+	tab `var'
+	replace `var' = . if `var' == 9
+}
+mdesc question28 question29 question30 question31 question32 question33 question34 question35 question36 question37 question38 question39 question40 question41 question42 question43 question44 question45 question46
+
+foreach var of varlist question28 question29 question30 question31 question32 question33 question34 question35 question36 question37 question38 question39 question40 question41 question42 question43 question44 question45 question46 {
+	bysort region district school_code: egen `var'_mean = mean(`var')
+	bysort region district school_code: egen `var'_count = count(`var')
+	bysort region district : egen `var'_mean_d = mean(`var')
+	bysort region district : egen `var'_count_d = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_d if missing(`var') & `var'_count_d > 7 & !missing(`var'_count_d)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+
+alphawgt question28_std question29_std question30_std question31_std question32_std question33_std question34_std question35_std question36_std question37_std question38_std question39_std question40_std question41_std question42_std question43_std question44_std question45_std question46_std , detail item
+pca question28_std question29_std question30_std question31_std question32_std question33_std question34_std question35_std question36_std question37_std question38_std question39_std question40_std question41_std question42_std question43_std question44_std question45_std question46_std 
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

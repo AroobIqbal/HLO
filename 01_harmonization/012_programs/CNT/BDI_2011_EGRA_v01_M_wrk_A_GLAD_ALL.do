@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -221,8 +222,7 @@ foreach var of varlist read_comp* {
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 strata1"
-	
+    local samplevars "learner_weight fpc1 strata1 national_level nationally_representative regionally_representative"
 
 	
 	*<_Nationally_representative_> 
@@ -243,8 +243,8 @@ foreach var of varlist read_comp* {
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-   /* *<_psu_>
-    clonevar su1  = stage1
+   * *<_psu_>
+    clonevar su1  = codecole
     label var su1 "Primary sampling unit"
     *</_learner_weight_> */
 	
@@ -292,7 +292,7 @@ foreach var of varlist read_comp* {
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
+	svyset su1 [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

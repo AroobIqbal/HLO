@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
 
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -174,7 +175,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	 "age male  idgrade total"
+    local traitvars	 "age male  idgrade total escs"
 
 	*<_total_> 
 	gen total = 1 
@@ -220,7 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 strata3 su1 su2 su3"
+    local samplevars "learner_weight strata1 strata3 su1 su2 su3 strata1 strata3 fpc1 fpc2 fpc3 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -306,7 +307,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/  
 	*/
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2)   || su3, fpc(fpc3) strata(strata3) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -317,10 +318,31 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist exit_interview34 exit_interview37_01 exit_interview37_02 exit_interview37_03 exit_interview37_04 exit_interview37_05 exit_interview37_06 exit_interview37_07 exit_interview37_08 exit_interview37_09 exit_interview37_10 exit_interview38_1 exit_interview38_2 exit_interview38_3 exit_interview38_4 {
+	tab `var'
+	replace `var' = . if `var' == 888
+}
+mdesc exit_interview34 exit_interview37_01 exit_interview37_02 exit_interview37_03 exit_interview37_04 exit_interview37_05 exit_interview37_06 exit_interview37_07 exit_interview37_08 exit_interview37_09 exit_interview37_10 exit_interview38_1 exit_interview38_2 exit_interview38_3 exit_interview38_4
+foreach var of varlist exit_interview34 exit_interview37_01 exit_interview37_02 exit_interview37_03 exit_interview37_04 exit_interview37_05 exit_interview37_06 exit_interview37_07 exit_interview37_08 exit_interview37_09 exit_interview37_10 exit_interview38_1 exit_interview38_2 exit_interview38_3 exit_interview38_4 {
+	bysort region school_code : egen `var'_mean = mean(`var')
+	bysort region school_code: egen `var'_count = count(`var')
+	
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+
+	egen `var'_mean_cnt = mean(`var')
+	
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 10 & !missing(`var'_count)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+*All households have pit latrine. Drop pit latrine.
+alphawgt exit_interview34_std exit_interview37_01_std exit_interview37_02_std exit_interview37_03_std exit_interview37_04_std exit_interview37_05_std exit_interview37_06_std exit_interview37_07_std exit_interview37_08_std exit_interview37_09_std exit_interview37_10_std exit_interview38_1_std exit_interview38_2_std exit_interview38_3_std exit_interview38_4_std [weight = wt_final], detail item
+pca exit_interview34_std exit_interview37_01_std exit_interview37_03_std exit_interview37_04_std exit_interview37_05_std exit_interview37_06_std exit_interview37_07_std exit_interview37_08_std exit_interview37_09_std exit_interview37_10_std exit_interview38_1_std exit_interview38_2_std exit_interview38_3_std exit_interview38_4_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

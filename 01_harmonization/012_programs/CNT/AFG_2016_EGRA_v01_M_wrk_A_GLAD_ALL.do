@@ -80,7 +80,8 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
+set seed 10051990
+set sortseed 10051990
 
        	local list dari pushto
     foreach file in `list' {
@@ -220,7 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 7.5.2021"  /* change dat
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 
 	

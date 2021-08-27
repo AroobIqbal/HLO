@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -172,7 +173,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male urban idgrade total"
+    local traitvars	"age male urban idgrade total escs"
 
 	*<_total_> 
 	gen total = 1 
@@ -219,8 +220,8 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 strata2 fpc1 fpc2 su1 su2"
-	
+    local samplevars "learner_weight strata1 strata2 fpc1 fpc2 su1 su2 national_level nationally_representative regionally_representative"
+		
 	*<_Nationally_representative_> 
 	gen national_level = 1
 	*</_Nationally_representative_>
@@ -290,7 +291,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ 
-	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, fpc(fpc2) strata(strata2)
+	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, fpc(fpc2) strata(strata2) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -301,10 +302,47 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist exit_interview16a exit_interview16b exit_interview17a exit_interview17b exit_interview17c exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17 {
+	tab `var'
+	replace `var' = . if inlist(`var',9,10,99)
+}
+*Missings:
+mdesc exit_interview16a exit_interview16b exit_interview17a exit_interview17b exit_interview17c exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17
+*For mothers, no job is coded as 0 and as 8. Recoding 8's to 8's for both parents:
+replace exit_interview16a = 0 if exit_interview16a == 8
+replace exit_interview16b = 0 if exit_interview16b == 8
+foreach var of varlist exit_interview17a exit_interview17b exit_interview17c exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17 {
+	egen `var'_std = std(`var')
+}
+alphawgt exit_interview17a_std exit_interview17b_std exit_interview17c_std exit_interview17g_std exit_interview17h_std exit_interview17i_std exit_interview17j_std exit_interview17_std [weight = learner_weight], detail item
+pca  exit_interview17a_std exit_interview17b_std exit_interview17c_std exit_interview17g_std exit_interview17h_std exit_interview17i_std exit_interview17j_std exit_interview17_std [weight = learner_weight]
+predict HOMEPOS
+
+*HIOCC
+egen HIOCC = rowmax(exit_interview16a exit_interview16b)
+label values HIOCC cuest16a
+
+*Filling in missing in occupation:
+bysort region district idschool : egen HIOCC_mode = mode(HIOCC), maxmode
+bysort region district idschool : egen HIOCC_count = count(HIOCC)
+
+bysort region district  : egen HIOCC_mode_d = mode(HIOCC), maxmode
+bysort region district  : egen HIOCC_count_d = count(HIOCC)
+
+bysort region  : egen HIOCC_mode_reg = mode(HIOCC), maxmode
+bysort region  : egen HIOCC_count_reg = count(HIOCC)
+
+egen HIOCC_mode_cnt = mode(HIOCC)
+
+replace HIOCC = HIOCC_mode if missing(HIOCC) & HIOCC_count > 5 & !missing(HIOCC_count)
+replace HIOCC = HIOCC_mode_d if missing(HIOCC) & HIOCC_count_d > 7 & !missing(HIOCC_count_d)
+replace HIOCC = HIOCC_mode_reg if missing(HIOCC) & HIOCC_count_reg > 10 & !missing(HIOCC_count_reg)
+replace HIOCC = HIOCC_mode_cnt if missing(HIOCC)
+
+polychoricpca HIOCC HOMEPOS [weight= wt_final], score(ESCS) nscore(1)
+ren ESCS1 escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

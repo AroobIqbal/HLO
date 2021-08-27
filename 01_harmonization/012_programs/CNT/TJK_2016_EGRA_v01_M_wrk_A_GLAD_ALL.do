@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -87,6 +88,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
          else {
            use "`input_dir'/2016.dta", clear
          }
+
 		 rename Region region2
 		rename *, lower
          compress
@@ -172,7 +174,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male idgrade total"
+    local traitvars	"male idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -219,7 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 su1"
+    local samplevars "learner_weight strata1 su1 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -291,7 +293,7 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */  */
 	
-	svyset su1 [pweight = learner_weight], strata(strata1) 
+	svyset su1 [pweight = learner_weight], strata(strata1) vce(linearized)
 	
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -302,10 +304,40 @@ local dofile_info = "last modified by Katharina Ziegler 20.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist q4_1_newspapers q4_2_magazines q4_4_other q4_other q4_3_religious_books q4_5_no_for_all_options q4_6_books q6 q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q19_computer_with_internet q20_automobile q21_tractor q22_truck q23 q24 q25 {
+	tab `var'
+}
+*Dropping variable coded for other q4_other q4_5_no_for_all_options
+*Creating dummies for categorical variables:
+tab q6, gen(q6_d)
+foreach var of varlist  q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q19_computer_with_internet q20_automobile q21_tractor q22_truck {
+	replace `var' = . if `var' == 3
+}
+gen roomspermember = q25/q23
+mdesc roomspermember q6 q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q19_computer_with_internet q20_automobile q21_tractor q22_truck q6 q4_6_books q4_3_religious_books q4_1_newspapers q4_2_magazines
+*q6 and q19 have high missing values. Dropping them.
+*Filling in missing:
+foreach var of varlist roomspermember q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q20_automobile q21_tractor q22_truck q4_6_books q4_3_religious_books q4_1_newspapers q4_2_magazines {
+	bysort region idschool : egen `var'_mean = mean(`var')
+	bysort region idschool: egen `var'_count = count(`var')
+	
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+
+	egen `var'_mean_cnt = mean(`var')
+	
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 10 & !missing(`var'_count)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+mdesc roomspermember q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q20_automobile q21_tractor q22_truck q4_6_books q4_3_religious_books q4_1_newspapers q4_2_magazines
+alphawgt roomspermember q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q20_automobile q21_tractor q22_truck q4_6_books q4_3_religious_books q4_1_newspapers q4_2_magazines [weight = wt_final], detail item
+pca roomspermember_std q11_radio_std q12_home_telephone_std q13_mobile_phone_std q14_television_std q15_refrigerator_std q16_bicycle_std q17_motor_cycle_std q18_computer_std q20_automobile_std q21_tractor_std q22_truck_std q4_6_books_std q4_3_religious_books_std q4_1_newspapers_std q4_2_magazines_std
+predict escs
+label var escs "Predicted ESCS"
+
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

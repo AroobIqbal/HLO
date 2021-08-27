@@ -215,7 +215,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su2 fpc1 fpc2"
+    local samplevars "learner_weight su1 su2 fpc1 fpc2 strata2 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -255,8 +255,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_su2_>
 	
 	*<_strata2_>
-	*clonevar strata2 = strat2
-    *label var strata2 "Strata 2"
+	clonevar strata2 = grade
+    label var strata2 "Strata 2"
     *</_strata2_> 
 
 	*<_fpc2_>
@@ -284,8 +284,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */
-	svyset su1 [pweight = learner_weight], fpc(fpc1) || su2, fpc(fpc2) singleunit(scaled)  
-
+	svyset su1 [pweight = learner_weight], fpc(fpc1) || su2, strata(strata2) fpc(fpc2) singleunit(scaled) vce(linearized)  
+	
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 

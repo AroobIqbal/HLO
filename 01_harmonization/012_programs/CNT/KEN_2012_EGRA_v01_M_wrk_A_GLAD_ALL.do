@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -176,7 +177,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male age urban idgrade total"
+    local traitvars	"male age urban idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -217,7 +218,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 strata1 strata2 su1 su2"
+    local samplevars "learner_weight fpc1 fpc2 strata1 strata2 su1 su2 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -238,7 +239,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar su1  = region
+    clonevar su1  = school_code
     label var su1 "Primary sampling unit"
     *</_psu_>
 	
@@ -287,7 +288,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */
 	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2)  singleunit(scaled) vce(linearized)
-
+	svy: mean score_egra*
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 
@@ -297,10 +298,25 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+
+foreach var of varlist  exit_interview2 exit_interview3 exit_interview4 exit_interview5 exit_interview6 exit_interview7 exit_interview8 exit_interview9 exit_interview10 exit_interview17 {
+	bysort region district school_code: egen `var'_mean = mean(`var')
+	bysort region district school_code: egen `var'_count = count(`var')
+	bysort region district : egen `var'_mean_d = mean(`var')
+	bysort region district : egen `var'_count_d = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_d if missing(`var') & `var'_count_d > 7 & !missing(`var'_count_d)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt  exit_interview2_std exit_interview3_std exit_interview4_std exit_interview5_std exit_interview6_std exit_interview7_std exit_interview8_std exit_interview9_std exit_interview10_std exit_interview17_std [weight = wt_final], item detail
+pca  exit_interview2_std exit_interview3_std exit_interview4_std exit_interview5_std exit_interview6_std exit_interview7_std exit_interview8_std exit_interview9_std exit_interview10_std exit_interview17_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

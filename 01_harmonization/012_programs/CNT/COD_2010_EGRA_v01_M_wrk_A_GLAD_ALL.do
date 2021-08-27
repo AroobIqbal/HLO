@@ -74,13 +74,15 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
+set seed 10051990
+set sortseed 10051990
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
@@ -179,7 +181,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	" idgrade male age total"
+    local traitvars	" idgrade male age total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -221,7 +223,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 
 	
@@ -305,10 +307,19 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+*Imputing missing values:
+foreach var of varlist exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview15 exit_interview14 exit_interview16 exit_interview17 exit_interview18 exit_interview19 {
+	replace `var' = . if `var' == 9
+	egen `var'_mean = mean(`var')
+	replace `var' = `var'_mean if missing(`var')
+}
+
+alphawgt exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview15 exit_interview14 exit_interview16 exit_interview17 exit_interview18 exit_interview19, detail std item label gen(HOMEPOS) // high index - 0.8921
+*Education in family:
+egen PARREAD = rowmax(exit_interview9a exit_interview9b)
+pca exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview15 exit_interview14 exit_interview16 exit_interview17 exit_interview18 exit_interview19
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

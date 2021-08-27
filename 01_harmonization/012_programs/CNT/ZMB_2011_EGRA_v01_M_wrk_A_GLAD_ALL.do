@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -108,7 +109,6 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 	   
 	   *Just one file
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
-
 
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
@@ -174,7 +174,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	 "age male  idgrade total"
+    local traitvars	 "age male  idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -220,7 +220,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 strata3 su1 su2 su3"
+    local samplevars "learner_weight strata1 strata3 su1 su2 su3 fpc1 fpc2 fpc3 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -306,7 +306,7 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/  
 	*/
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2)   || su3, fpc(fpc3) strata(strata3) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -317,10 +317,30 @@ local dofile_info = "last modified by Katharina Ziegler 23.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist s38 s41_a s41_b s41_c s41_d s41_e s41_f s41_g s41_h s41_i s41_j s41_k s41_l s41_m s41_n s41_o s41_p s41_q s41_r {
+	tab `var'
+}
+mdesc s38 s41_a s41_b s41_c s41_d s41_e s41_f s41_g s41_h s41_i s41_j s41_k s41_l s41_m s41_n s41_o s41_p s41_q s41_r
+*Filling in missing:
+foreach var of varlist s38 s41_a s41_b s41_c s41_d s41_e s41_f s41_g s41_h s41_i s41_j s41_k s41_l s41_m s41_n s41_o s41_p s41_q s41_r {
+	bysort region district school_code: egen `var'_mean = mean(`var')
+	bysort region district school_code: egen `var'_count = count(`var')
+	bysort region district : egen `var'_mean_d = mean(`var')
+	bysort region district : egen `var'_count_d = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_d if missing(`var') & `var'_count_d > 7 & !missing(`var'_count_d)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt s38_std s41_a_std s41_b_std s41_c_std s41_d_std s41_e_std s41_f_std s41_g_std s41_h_std s41_i_std s41_j_std s41_k_std s41_l_std s41_m_std s41_n_std s41_o_std s41_p_std s41_q_std s41_r_std [weight = wt_final], detail item
+pca s38_std s41_a_std s41_b_std s41_c_std s41_d_std s41_e_std s41_f_std s41_g_std s41_h_std s41_i_std s41_j_std s41_k_std s41_l_std s41_m_std s41_n_std s41_o_std s41_p_std s41_q_std s41_r_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

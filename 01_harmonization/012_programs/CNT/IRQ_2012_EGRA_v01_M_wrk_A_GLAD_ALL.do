@@ -213,7 +213,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_idgrade_>
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 su3 fpc3"
+    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 su3 fpc3 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -229,7 +229,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = wt_final
+    clonevar learner_weight  = wt_final_2
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	

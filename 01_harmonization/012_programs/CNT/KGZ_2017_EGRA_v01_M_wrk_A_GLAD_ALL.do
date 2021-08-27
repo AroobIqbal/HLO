@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -88,6 +89,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
            use "`input_dir'/2017.dta", clear
          }
 		rename *, lower
+		drop if missing(q1)
          compress
          save "`temp_dir'/2017.dta", replace
 		
@@ -176,7 +178,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"male urban idgrade total"
+    local traitvars	"male urban idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -219,7 +221,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 "
+    local samplevars "learner_weight su1 strata1 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -299,10 +301,39 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist q4a q4b q4c q4d q6 q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 q23 q25 {
+	tab `var'
+}
+*Cleaning:
+foreach var of varlist q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 {
+	replace `var' = . if `var' == 3
+	replace `var' = 0 if `var' == 2
+}
+foreach var of varlist q4a q4b q4c q4d {
+	replace `var' = 0 if `var' != 1
+}
+*Creating dummies from categorical variables:
+foreach var of varlist q6 q25 q23 {
+	tab `var', gen(`var'_d)
+}
+mdesc q4a q4b q4c q4d q6 q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 q23 q25
+*q23 and q25 have 25% missing values. so dropped
+foreach var of varlist q4a q4b q4c q4d q6_d* q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 {
+	bysort region idschool: egen `var'_mean = mean(`var')
+	bysort region idschool: egen `var'_count = count(`var')
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt q4a_std q4b_std q4c_std q4d_std q6_d*_std q11_std q12_std q13_std q14_std q15_std q16_std q17_std q18_std q19_std q20_std q21_std q22_std [weight = wt_final], detail item
+pca q4a_std q4b_std q4c_std q4d_std q6_d*_std q11_std q12_std q13_std q14_std q15_std q16_std q17_std q18_std q19_std q20_std q21_std q22_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

@@ -74,6 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -216,7 +218,10 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su2 strata1 strata2 fpc1 fpc2"
+    local samplevars "learner_weight su1 su2 strata1 strata2 fpc1 fpc2 national_level nationally_representative regionally_representative"
+	
+svydescribe
+svy: mean score_egra_read
 	
 
 	
@@ -239,7 +244,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_learner_weight_>
 	
    * *<_psu_>
-    clonevar su1  = school_code
+    clonevar su1  = stage1
     label var su1 "Primary sampling unit"
     *</_learner_weight_>*
 	
@@ -262,11 +267,11 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var strata2 "Strata 2"
     *</_learner_weight_> 
 
-	/*<_fpc2_>
+	*<_fpc2_>
     label var fpc2 "fpc 2"
     *</_learner_weight_>
 	
-	*<_su3_>
+	/*<_su3_>
 	clonevar su3 = stage3
     label var su3 "Sampling unit 2"
     *</_learner_weight_>
@@ -289,7 +294,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *</_jkrep_>*/
 
 */
-	svyset su1 [pweight = learner_weight], fpc(fpc1)  strata(strata1) || su2, fpc(fpc2) strata(strata2) singleunit(scaled)
+	svyset su1 [pweight = learner_weight], fpc(fpc1)  strata(strata1) || su2, fpc(fpc2) strata(strata2) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

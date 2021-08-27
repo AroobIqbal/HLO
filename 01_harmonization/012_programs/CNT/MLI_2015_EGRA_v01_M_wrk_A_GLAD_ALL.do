@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -170,7 +171,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	"age male idgrade total"
+    local traitvars	"age male idgrade total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -214,7 +215,10 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 su1 su2"
+    local samplevars "learner_weight fpc1 fpc2 su1 su2 national_level nationally_representative regionally_representative"
+	
+	svydescribe
+	
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -294,10 +298,28 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+numlabel, add
+foreach var of varlist s_6 s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19 {
+	tab `var'
+	replace `var' = . if `var' == 9
+}
+mdesc s_6 s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19
+*s_6 has 23% missing. Drop the variable:
+foreach var of varlist s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19 {
+	bysort region school_code: egen `var'_mean = mean(`var')
+	bysort region school_code: egen `var'_count = count(`var')
+	bysort region: egen `var'_mean_reg = mean(`var')
+	bysort region: egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt s_10_std s_11_std s_12_std s_13_std s_14_std s_15_std s_16_std s_17_std s_18_std s_19_std [weight = learner_weight], detail item
+pca s_10_std s_11_std s_12_std s_13_std s_14_std s_15_std s_16_std s_17_std s_18_std s_19_std [weight = learner_weight]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

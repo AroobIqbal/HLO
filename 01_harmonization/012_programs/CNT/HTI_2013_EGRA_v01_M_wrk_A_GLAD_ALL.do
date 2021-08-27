@@ -73,7 +73,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -105,7 +106,6 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
 	*Already a single file
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
-
 
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
@@ -231,6 +231,46 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     gen learner_weight  = wt_final
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
+	
+    *<_psu_>
+    clonevar su1  = cluster
+    label var su1 "Primary sampling unit"
+    *</_learner_weight_>
+	
+	*<_strata1_>
+    label var strata1 "Strata 1"
+    *</_learner_weight_>
+	
+	*<_fpc1_>
+    label var fpc1 "fpc 1"
+    *</_learner_weight_>*
+
+	*<_su2_>
+	clonevar su2 = school_code
+    label var su2 "Sampling unit 2"
+    *</_learner_weight_>
+	
+	*<_strata2_>
+	clonevar strata2 = cluster
+    label var strata2 "Strata 2"
+    *</_learner_weight_>
+
+	*<_fpc2_>
+    label var fpc2 "fpc 2"
+    *</_learner_weight_>*
+	
+	*<_su3_>
+	clonevar su3 = idlearner
+    label var su3 "Sampling unit 2"
+    *</_learner_weight_>
+	
+	*<_strata3_>
+    label var strata3 "Strata 3"
+    *</_learner_weight_>
+
+	*<_fpc3_>
+    label var fpc3 "fpc 3"
+    *</_learner_weight_>*/
 
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
@@ -240,7 +280,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-
+	svyset su1 [pweight= learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, strata(strata3) fpc(fpc3) singleunit(centered) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

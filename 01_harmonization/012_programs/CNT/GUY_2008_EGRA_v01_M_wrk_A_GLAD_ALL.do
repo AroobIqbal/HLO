@@ -74,7 +74,8 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -169,7 +170,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 
     // TRAIT Vars:
-    local traitvars	" idgrade male age total"
+    local traitvars	" idgrade male age total escs"
 	
 	*<_total_> 
 	gen total = 1 
@@ -209,8 +210,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 su1 su2 strata1 "
-	
+    local samplevars "learner_weight fpc1 fpc2 su1 su2 su3 strata3 strata1 national_level nationally_representative regionally_representative"
 
 	
 	*<_Nationally_representative_> 
@@ -263,12 +263,13 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var su3 "Sampling unit 3"
     *</_learner_weight_>
 	
-	/*<_strata3_>
+	*<_strata3_>
+	clonevar strata3= grade
     label var strata3 "Strata 3"
     *</_learner_weight_>
 
 	*<_fpc3_>
-    label var fpc3 "fpc 3"
+   * label var fpc3 "fpc 3"
     *</_learner_weight_>*/
 
 
@@ -280,8 +281,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) singleunit(scaled)
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) || su3,  strata(strata3) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -291,10 +291,27 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 {
+	tab `var'
+}
+*Missing variables:
+mdesc exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18
+*Fillin missing:
+foreach var of varlist exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 {
+	bysort region school_code: egen `var'_mean = mean(`var')
+	bysort region school_code: egen `var'_count = count(`var')
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt exit_interview10_std exit_interview11_std exit_interview12_std exit_interview13_std exit_interview14_std exit_interview15_std exit_interview16_std exit_interview17_std exit_interview18_std [weight = wt_final], item detail std
+pca exit_interview10_std exit_interview11_std exit_interview12_std exit_interview13_std exit_interview14_std exit_interview15_std exit_interview16_std exit_interview17_std exit_interview18_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"

@@ -79,7 +79,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
+set seed 10051990
+set sortseed 10051990
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
@@ -216,7 +217,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*gen wt1=pw1*pw2
 

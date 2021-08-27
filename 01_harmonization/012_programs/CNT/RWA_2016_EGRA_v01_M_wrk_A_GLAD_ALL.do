@@ -73,7 +73,8 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
 
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
@@ -218,7 +219,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *</_idgrade_>
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 strata2 strata3 strata4 strata5 su1 su2 su3 su4 su5 fpc1 fpc2 fpc3 fpc4 fpc5"
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -238,7 +239,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
+    /*<_psu_>
     *clonevar su1  = school_code
     label var su1 "Primary sampling unit"
     *</_psu_>
@@ -306,7 +307,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
 
 	*<_fpc5_>
     label var fpc5 "fpc 5"
-    *</_fpc5_>
+    *</_fpc5_> */
 
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
@@ -315,7 +316,7 @@ local dofile_info = "last modified by Katharina Ziegler 15.7.2021"  /* change da
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */
-	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, strata(strata3) fpc(fpc3)|| su4, strata(strata4) fpc(fpc4) || su5, strata(strata5) fpc(fpc5) singleunit(scaled)  
+	*svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, strata(strata2) fpc(fpc2) || su3, strata(strata3) fpc(fpc3)|| su4, strata(strata4) fpc(fpc4) || su5, strata(strata5) fpc(fpc5) singleunit(scaled)  
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
