@@ -318,7 +318,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist exit_interview34 exit_interview37_01 exit_interview37_02 exit_interview37_03 exit_interview37_04 exit_interview37_05 exit_interview37_06 exit_interview37_07 exit_interview37_08 exit_interview37_09 exit_interview37_10 exit_interview38_1 exit_interview38_2 exit_interview38_3 exit_interview38_4 {
 	tab `var'
 	replace `var' = . if `var' == 888

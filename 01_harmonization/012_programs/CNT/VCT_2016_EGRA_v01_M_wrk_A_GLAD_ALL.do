@@ -314,7 +314,8 @@ set sortseed 10051990
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/  
 	
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)*/
+	*/
+	svyset [pweight= learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 

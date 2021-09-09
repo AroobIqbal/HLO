@@ -221,7 +221,7 @@ set sortseed 10051990
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight national_level nationally_representative regionally_representative"
-	*school_code is missing to correctly svyset data
+	//school_code is missing to correctly svyset data
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -304,7 +304,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist exit_interview6 exit_interview10 exit_interview11 exit_interview12 exit_interview13 exit_interview14 exit_interview15 exit_interview16 exit_interview17 exit_interview18 {
 	tab `var'
 	replace `var' = . if `var' == 9

@@ -222,7 +222,7 @@ foreach var of varlist read_comp* {
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 strata1 national_level nationally_representative regionally_representative"
+    local samplevars "learner_weight su1 fpc1 strata1 national_level nationally_representative regionally_representative"
 
 	
 	*<_Nationally_representative_> 

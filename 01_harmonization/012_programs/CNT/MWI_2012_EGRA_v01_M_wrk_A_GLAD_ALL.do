@@ -158,7 +158,7 @@ set sortseed 10051990
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	gen score_egra_read = read_comp_score_pcnt
+	gen score_egra_read = read_comp_score_pcnt*100
     label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
@@ -220,7 +220,7 @@ set sortseed 10051990
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight national_level nationally_representative regionally_representative"
-	*missing school_code to complete svyset
+	//missing school_code to complete svyset
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -303,7 +303,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist exit_interview2 exit_interview3 exit_interview4 exit_interview5 exit_interview6 exit_interview7 exit_interview8 exit_interview9 exit_interview10 exit_interview15 exit_interview18 exit_interview19 {
 	tab `var'
 	replace `var' = . if inlist(`var',8,9)

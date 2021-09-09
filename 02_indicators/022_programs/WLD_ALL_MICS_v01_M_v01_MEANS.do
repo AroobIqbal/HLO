@@ -96,7 +96,7 @@ foreach c of local country {
 										svy: mean `indicator'`sub'`trait'`lv' 
 									}
 									
-	/*								if inlist("`c'","KGZ") {
+								if inlist("`c'","KGZ") {
 								
 
 										 mean `indicator'`sub'`trait'`lv' [pweight = fsweight]
@@ -107,7 +107,7 @@ foreach c of local country {
 
 										 svyset  [pweight = fsweight], strata(stratum)
 										 svy: mean `indicator'`sub'`trait'`lv' 
-									} */
+									} 
 									
 									if _rc == 0 {
 

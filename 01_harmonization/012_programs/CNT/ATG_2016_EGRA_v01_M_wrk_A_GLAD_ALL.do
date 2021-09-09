@@ -294,7 +294,7 @@ set sortseed 10051990
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-*/
+	svyset [pweight = learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

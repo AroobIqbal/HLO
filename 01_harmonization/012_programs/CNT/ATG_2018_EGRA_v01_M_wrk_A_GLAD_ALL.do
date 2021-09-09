@@ -302,7 +302,7 @@ set sortseed 10051990
     * code for ESCS
     * label for ESCS
     *</_escs_>
-
+	svyset [pweight = learner_weight]
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"
 
 

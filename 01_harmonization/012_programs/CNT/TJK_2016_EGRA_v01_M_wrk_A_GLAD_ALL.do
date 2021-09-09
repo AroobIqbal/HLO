@@ -304,7 +304,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist q4_1_newspapers q4_2_magazines q4_4_other q4_other q4_3_religious_books q4_5_no_for_all_options q4_6_books q6 q11_radio q12_home_telephone q13_mobile_phone q14_television q15_refrigerator q16_bicycle q17_motor_cycle q18_computer q19_computer_with_internet q20_automobile q21_tractor q22_truck q23 q24 q25 {
 	tab `var'
 }

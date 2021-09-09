@@ -301,10 +301,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
-foreach var of varlist q4a q4b q4c q4d q6 q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 q23 q25 {
-	tab `var'
-}
+
 *Cleaning:
 foreach var of varlist q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 {
 	replace `var' = . if `var' == 3

@@ -302,7 +302,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist exit_interview16a exit_interview16b exit_interview17a exit_interview17b exit_interview17c exit_interview17g exit_interview17h exit_interview17i exit_interview17j exit_interview17 {
 	tab `var'
 	replace `var' = . if inlist(`var',9,10,99)

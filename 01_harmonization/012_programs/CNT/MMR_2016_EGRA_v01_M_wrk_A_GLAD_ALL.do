@@ -295,9 +295,10 @@ set sortseed 10051990
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ */
-	svyset su1 [pweight = learner_weight],  strata(strata1) singleunit(scaled) vce(linearized)
+	
 */
-    noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
+    svyset [pweight = learner_weight]
+	noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 
     *---------------------------------------------------------------------------

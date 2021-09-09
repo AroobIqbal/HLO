@@ -161,7 +161,7 @@ set sortseed 10051990
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	gen score_egra_read = read_comp_score_pcnt
+	gen score_egra_read = read_comp_score_pcnt*100
     label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
@@ -307,7 +307,8 @@ set sortseed 10051990
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/  
 	
-	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1)   || su3, fpc(fpc3) strata(strata3) singleunit(scaled)*/
+	*/
+	svyset [pweight= learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -318,7 +319,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist question18 question19 question20 question21 question22 question23 question24 question25 {
 	tab `var'
 	replace `var' = . if inlist(`var',9,99)

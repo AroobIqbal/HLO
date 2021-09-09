@@ -90,6 +90,7 @@ set sortseed 10051990
          else {
            use "`input_dir'/`file'.dta", clear
          }
+		keep if year == 2013
 		rename *, lower
          compress
          save "`temp_dir'/`file'.dta", replace
@@ -224,7 +225,8 @@ set sortseed 10051990
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight strata1 strata2 fpc1 fpc2 su1 su2 national_level nationally_representative regionally_representative"
+    local samplevars "learner_weight  national_level nationally_representative regionally_representative"
+	//svyset is not clear, since student id is missing/wrong.
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0
@@ -244,7 +246,7 @@ set sortseed 10051990
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
+    /*<_psu_>
     clonevar su1  = school_code_m
     label var su1 "Primary sampling unit"
     *</_psu_>
@@ -260,7 +262,7 @@ set sortseed 10051990
     *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = id
+	clonevar su2 = idlearner
     label var su2 "Sampling unit 2"
     *</_su2_>
 	
@@ -272,7 +274,7 @@ set sortseed 10051990
 	*<_fpc2_>
 	clonevar fpc2= fpc_2
     label var fpc2 "fpc 2"
-    *</_fpc2_>
+    *</_fpc2_>*/
 	
 	/*<_su3_>
 	gen su3 = _n
@@ -294,8 +296,9 @@ set sortseed 10051990
 
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
-    *</_jkrep_>*/ */ *
-	svyset su1 [pweight = learner_weight], strata(strata1) fpc(fpc1) || su2, fpc(fpc2) strata(strata2)
+    *</_jkrep_>*/ */ 
+	
+	svyset [pweight = learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
@@ -354,7 +357,8 @@ set sortseed 10051990
     edukit_save,  filename("`output_file'") path("`output_dir'") dir2delete("`temp_dir'")              ///
                 idvars("`idvars'") varc("key `keyvars'; value `valuevars'; trait `traitvars'; sample `samplevars'") ///
                 metadata("`metadata'") collection("GLAD")
-				
+				svyset
+				svy: mean
 *Results close but not exactly matching yet
  /* }
 

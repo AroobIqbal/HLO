@@ -85,7 +85,7 @@ set sortseed 10051990
 	local list 2009 2009_a 2009_f
     foreach file in `list' {
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2019.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2009.dta) `shortcut')
          }
          else {
            use "`input_dir'/`file'.dta", clear
@@ -143,7 +143,7 @@ set sortseed 10051990
 	*</_year_>
 
    *<_idschool_> 
-	gen idschool = school_code
+	gen idschool =masked_school_code
 	replace idschool = -99 if idschool == .
     label var idschool "School ID"
     *<_idschool_> */
@@ -241,8 +241,9 @@ set sortseed 10051990
 
 
     *<_learner_weight_>
+	//2009_a file is not svyset
     gen learner_weight  = wt_final
-	replace learner_weight = 0 if learner_weight == .
+	replace learner_weight = 1 if learner_weight == .
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
@@ -261,7 +262,7 @@ set sortseed 10051990
     *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = school_code
+	clonevar su2 = masked_school_code
     label var su2 "Sampling unit 2"
     *</_su2_>
 	

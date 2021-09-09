@@ -84,17 +84,21 @@ set sortseed 10051990
 
 
 
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
-         if `from_datalibweb'==1 {
+       // Temporary copies of the 4 rawdatasets needed for each country (new section)	: 
+	   		local list NNPS NNPS_2 NNPS_3
+         foreach file in `list' {
+		 	if `from_datalibweb'==1 {
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2014_NNPS.dta", clear
+           use "`input_dir'/2014_`file'.dta", clear
+			
          }
-         rename *, lower
+         gen study = "NNPS"
+		 rename *, lower
          compress
-         save "`temp_dir'/2014_NNPS.dta", replace
-		
+         save "`temp_dir'/2014_`file'.dta", replace
+		}
 		
 
     noi disp as res "{phang}Step 1 completed (`output_file'){p_end}"
@@ -107,8 +111,10 @@ set sortseed 10051990
     /* NOTE: the merge / append of all rawdata saved in temp in above step
        will vary slightly by assessment.
        See the two examples continuedw and change according to your needs */
-	   
-	   *Just one file
+	   local list NNPS NNPS_2 NNPS_3
+       foreach file in `list' {
+	   append using "`temp_dir'/2014_`file'.dta", force
+	   }
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
@@ -122,7 +128,7 @@ set sortseed 10051990
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner idschool"
+    local idvars "idcntry_raw year idlearner idschool study"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -130,7 +136,7 @@ set sortseed 10051990
     *</_idcntry_raw_>
 	
 	*<_year_>
-	gen year = `year'
+	replace year = `year' if year==.
 	label var year "Year"
 	*</_year_>
 
@@ -283,7 +289,7 @@ set sortseed 10051990
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	*svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
+	svyset [pweight= learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

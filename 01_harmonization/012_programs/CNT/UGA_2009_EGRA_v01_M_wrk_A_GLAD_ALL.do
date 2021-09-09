@@ -222,8 +222,9 @@ set sortseed 10051990
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 su3 strata1  strata3 fpc1 fpc3 national_level nationally_representative regionally_representative"
-
+    local samplevars "learner_weight su1 su2 su3 strata1  strata3 fpc1 fpc2 fpc3 national_level nationally_representative regionally_representative"
+	//missing school code for a complete svyset
+	
 	*<_Nationally_representative_> 
 	gen national_level = 0
 	*</_Nationally_representative_>

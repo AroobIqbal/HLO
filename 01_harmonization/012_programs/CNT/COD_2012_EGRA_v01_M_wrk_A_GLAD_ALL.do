@@ -164,7 +164,7 @@ set sortseed 10051990
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-	gen score_egra_read = read_comp_score_pcnt
+	gen score_egra_read = read_comp_score_pcnt*100
     label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
@@ -221,7 +221,7 @@ set sortseed 10051990
 
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight national_level nationally_representative regionally_representative"
+    local samplevars "learner_weight national_level nationally_representative regionally_representative su1 strata1 fpc1 su2 strata2 fpc2"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0

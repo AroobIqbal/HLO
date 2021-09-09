@@ -167,7 +167,7 @@ set sortseed 10051990
     *<_score_assessment_subject_pv_>
     replace read_comp_score_pcnt = 0 if missing(read_comp_score_pcnt) & inlist(grade,4,6)
 	replace read_comp_score_zero = 0 if missing(read_comp_score_zero) & inlist(grade,4,6)
-	gen score_egra_read = read_comp_score_pcnt
+	gen score_egra_read = read_comp_score_pcnt*100
     label var score_egra_read "Percentage of correct reading comprehension questions for `assessment' "
     *}
     *</_score_assessment_subject_pv_>
@@ -225,7 +225,7 @@ set sortseed 10051990
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
-
+	//school_code is missing for completing the svyset
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0

@@ -213,7 +213,8 @@ set sortseed 10051990
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight fpc1  fpc2 national_level nationally_representative regionally_representative"
-
+	
+	//svyset is unclear, there are fpc in the data, but no stages/stratas and I did not find anything in the text. school_code variable which seems to be necessary is also not available.
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1

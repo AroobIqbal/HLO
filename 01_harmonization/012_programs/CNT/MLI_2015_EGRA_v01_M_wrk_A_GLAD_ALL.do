@@ -215,7 +215,7 @@ set sortseed 10051990
     *</_idclass_>*/
 	
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight fpc1 fpc2 su1 su2 national_level nationally_representative regionally_representative"
+    local samplevars "learner_weight fpc1 fpc2 su1 su2 national_level nationally_representative regionally_representative strata1 su1 fpc1 strata2 su2 fpc2"
 	
 	svydescribe
 	
@@ -298,12 +298,6 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
-foreach var of varlist s_6 s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19 {
-	tab `var'
-	replace `var' = . if `var' == 9
-}
-mdesc s_6 s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19
 *s_6 has 23% missing. Drop the variable:
 foreach var of varlist s_10 s_11 s_12 s_13 s_14 s_15 s_16 s_17 s_18 s_19 {
 	bysort region school_code: egen `var'_mean = mean(`var')

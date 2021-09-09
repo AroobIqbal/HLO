@@ -317,7 +317,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist s38 s41_a s41_b s41_c s41_d s41_e s41_f s41_g s41_h s41_i s41_j s41_k s41_l s41_m s41_n s41_o s41_p s41_q s41_r {
 	tab `var'
 }

@@ -211,7 +211,7 @@ set sortseed 10051990
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight"
+    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2 su3 strata3 fpc3"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 0

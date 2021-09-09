@@ -90,7 +90,8 @@ set sortseed 10051990
          else {
            use "`input_dir'/2012.dta", clear
          }
-         rename *, lower
+         drop if missing(language)
+		 rename *, lower
          compress
          save "`temp_dir'/2012.dta", replace
 
@@ -144,7 +145,7 @@ set sortseed 10051990
     *</_idclass_>*/
 
     *<_idlearner_> - there is an id available but there are duplicates
-	gen idlearner = _n
+	gen idlearner = id
     label var idlearner "Learner ID"
     *</_idlearner_>
 

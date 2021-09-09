@@ -98,7 +98,7 @@ set sortseed 10051990
 		if (_rc == 0) {
 		rename Readpct readpct3
 }
-         
+         gen study = "`file'"
 		 rename *, lower
          compress
          save "`temp_dir'/2015_`file'.dta", replace
@@ -135,7 +135,7 @@ set sortseed 10051990
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idlearner idschool"
+    local idvars "idcntry_raw year idlearner idschool study"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "`region'"
@@ -298,7 +298,7 @@ set sortseed 10051990
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
-	*svyset [pweight= learner_weight], fpc(fpc1) strata(strata1) vce(linearized) 
+	svyset [pweight = learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 

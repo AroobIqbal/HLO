@@ -286,8 +286,8 @@ set sortseed 10051990
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/ */ */
-	svyset su1 [pweight = learner_weight], fpc(fpc1) singleunit(scaled) */
-
+	 */
+	svyset [pweight = learner_weight]
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}" 
 
 
@@ -297,7 +297,7 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-numlabel, add
+
 foreach var of varlist question28 question29 question30 question31 question32 question33 question34 question35 question36 question37 question38 question39 question40 question41 question42 question43 question44 question45 question46 {
 	tab `var'
 	replace `var' = . if `var' == 9
