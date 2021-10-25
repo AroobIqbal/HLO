@@ -66,8 +66,12 @@
   else if inlist("`c(username)'","wb576431","WB576431") {
     global clone "\GDB\Personal\WB576431\HLO"
   }
-
-
+  * Domenica
+  else if inlist("`c(username)'","Dome") {
+    global clone "C:\Users\Dome\Desktop\WB TEST\HLO"
+  }
+  
+  
   /* WELCOME!!! ARE YOU NEW TO THIS CODE?
      Add yourself by copying the lines above, making sure to adapt your clone */
   else {
@@ -104,7 +108,7 @@
   * Load project specific ado-files
   cap net uninstall glad_toolkit
   net install glad_toolkit.pkg, from("${clone}/05_adofiles") replace
-  net install edukit.pkg, from ("\GDB\Personal\WB504672\EduAnalyticsToolkit\src") replace
+ cap net install edukit.pkg, from ("https://raw.githubusercontent.com/worldbank/eduanalyticstoolkit/master/src") replace
 
   * Check for EduAnalyticsToolkit package
   cap edukit
