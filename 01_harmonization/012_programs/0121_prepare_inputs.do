@@ -4,6 +4,9 @@
 * Author: Diana Goldemberg
 *==============================================================================*
 
+cd "C:\Users\Dome\Desktop\WB TEST\HLO"  
+import delimited using "C:\Users\Dome\Desktop\WB TEST\HLO\01_harmonization\011_rawdata\master_countrycode_list.csv", varnames(1) encoding("utf-8") clear
+*DOMENICA NOTE: I have changed this dofile to my local directory to make the changes in the data
 
 * Both CSVs handled in this do are master files that will be filtered within
 * each GLAD.do for only the specific assesment-year being manipulated
@@ -12,7 +15,7 @@
 * Master country list by assessment-year
 *-------------------------------------------------------------------------------
 * Reads .csv which has one observation for each idcntryraw-assessment-year (tracked in Github)
-import delimited using "${clone}/01_harmonization/011_rawdata/master_countrycode_list.csv", varnames(1) encoding("utf-8") clear
+/*import delimited using "${clone}/01_harmonization/011_rawdata/master_countrycode_list.csv", varnames(1) encoding("utf-8") clear*/
 
 * Label all variables
 label var countrycode    "WB country code (3 letters)"
@@ -29,8 +32,10 @@ drop   *_dummy
 
 * Saves master .dta (not tracked in GitHub)
 compress
-save "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta", replace
+save "master_countrycode_list.dta", replace
 *-------------------------------------------------------------------------------
+
+
 
 
 *-------------------------------------------------------------------------------

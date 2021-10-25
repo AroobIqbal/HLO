@@ -72,6 +72,7 @@
   }
   
   
+  
   /* WELCOME!!! ARE YOU NEW TO THIS CODE?
      Add yourself by copying the lines above, making sure to adapt your clone */
   else {
@@ -80,7 +81,7 @@
   }
 
   * Checks that files in the clone can be accessed by testing any clone file (like this one)
-  cap confirm file "${clone}/profile_GLAD-Production.do"
+cap confirm file "${clone}/profile_GLAD-Production.do"
   if _rc != 0 {
     noi disp as error _newline "{phang}Having issues accessing your local clone of the GLAD repo. Please double check the clone location specified in profile_GLAD-Production do-file and try again.{p_end}"
     error 2222
