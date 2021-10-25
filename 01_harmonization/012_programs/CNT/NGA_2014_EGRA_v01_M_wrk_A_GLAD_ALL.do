@@ -1,16 +1,17 @@
+
 *=========================================================================*
 * GLOBAL LEARNING ASSESSMENT DATABASE (GLAD)
-* Project information at: https://github.com/worldbank/GLAD
+* Project information at: https://github.com/worldbank/
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "GMB"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2013"  /* 2015 */
+local region      = "NGA"/* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2014"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
-local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change date*/
+local ttl_info    = "Syedah Aroob Iqbal" /* no need to change here */
+local dofile_info = "last modified by Katharina Ziegler, 7.20.2021"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -75,7 +76,6 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
 set seed 10051990
 set sortseed 10051990
-
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -85,14 +85,14 @@ set sortseed 10051990
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(nas.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2013.dta", clear
+           use "`input_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", clear
          }
          rename *, lower
          compress
-         save "`temp_dir'/2013.dta", replace
+         save "`temp_dir'/PUF_3.Nigeria2014-4_State_grade2-3_EGRA-SSME_Hausa-English.dta", replace
 		
 		
 
@@ -126,62 +126,44 @@ set sortseed 10051990
     local idvars "idcntry_raw year idschool idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "GMB"
+    gen idcntry_raw = "NGA"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
 	
 	*<_year_>
+	*gen year = 2014
 	label var year "Year"
 	*</_year_>
 
 
     *<_idschool_>
-	gen idschool = emis
-	replace idschool = emis_code if missing(idschool)
+	encode school_code, gen (idschool)
     label var idschool "School ID"
     *</_idschool_>
-	
-	
+
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
     *</_idclass_>*/
 
     *<_idlearner_>
-	clonevar idlearner = id
+	encode id, gen (idlearner)
     label var idlearner "Learner ID"
     *</_idlearner_>
 
-    /* Drop any value labels of idvars, to be okay to append multiple surveys
-    foreach var of local idvars {
+    * Drop any value labels of idvars, to be okay to append multiple surveys
+    foreach var of varlist year idschool  idlearner {
       label values `var' .
-    }*/
+    }
 
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
+	replace e_read_comp_score_pcnt = 0 if missing(e_read_comp_score_pcnt) & grade == 3
+	gen score_egra_read = e_read_comp_score_pcnt
+	label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *foreach pv in 01 02 03 04 05 {
-	*Generating read_comp_score_pcnt: (Reading comprehension in Croele)
-	numlabel, add
-	*How do we know 2 and 3 are to be replaced with 0
-	foreach var of varlist read_comp_q1 read_comp_q2 read_comp_q3 read_comp_q4 read_comp_q5 {
-		tab `var' if year == 2016, m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,2,.) & year == 2016
-	}
-	foreach var of varlist  read_comp_quest1 read_comp_quest2 read_comp_quest3 read_comp_quest4 read_comp_quest5 {
-		tab `var', m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,.) & year == 2013
-	}
-	egen read_comp_score_2013 = rowtotal(read_comp_quest1_n read_comp_quest2_n read_comp_quest3_n read_comp_quest4_n read_comp_quest5_n), missing
-	egen read_comp_score_2016 = rowtotal(read_comp_q1_n read_comp_q2_n read_comp_q3_n read_comp_q4_n read_comp_q5_n), missing
-	gen read_comp_score = read_comp_score_2013
-	replace read_comp_score = read_comp_score_2016 if missing(read_comp_score)
-	gen read_comp_score_pcnt_n = (read_comp_score/5)*100
-	clonevar score_egra_read = read_comp_score_pcnt_n
-      label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
 
@@ -194,20 +176,18 @@ set sortseed 10051990
 
 
     // TRAIT Vars:
-    local traitvars	"age male idgrade total"
-	
-		
+    local traitvars	"male idgrade total"
+
 	*<_total_> 
 	gen total = 1 
 	label define total 1 "total"
 	label values total total
-	*<_total_> 
+	*<_total_>
 	
-
-    *<_age_>
+    /*<_age_> -Not available
     *clonevar age = std_age	
     label var age "Learner age at time of assessment"
-    *</_age_>
+    *</_age_>*/
 
     /*<_urban_> - Urban not available
     *gen byte urban = (inlist(acbg05a, 1, 2, 3, 4, 5)) if !missing(acbg05a) & acbg05a != 9
@@ -220,72 +200,76 @@ set sortseed 10051990
     *</_urban_o_>*/
 
     *<_male_>
-    gen byte male = std_gender
-	replace male = 1 if female == 0 & missing(male)
-	replace male = 0 if female == 1 & missing(male)
-	label define male 1 "male" 0 "female", replace
-	label val male male
+	gen male = 1 if female == 0
+	replace male = 0 if female == 1
     label var male "Learner gender is male/female"
     *</_male_>
-
-    *<_idgrade_> 
-	clonevar idgrade = grade
+	
+	*<_idgrade_> - From report
+	gen idgrade = 2 if grade == 2
+	replace idgrade = 3 if inlist(grade,3,4)
     label var idgrade "Grade ID"
     *</_idgrade_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2 national_level nationally_representative regionally_representative"
-	
-	*gen wt1=pw1*pw2
+    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 national_level nationally_representative regionally_representative"
+/*Original survey set specifications:
+  pweight: wt_final
+          VCE: linearized
+  Single unit: scaled
+     Strata 1: strata1
+         SU 1: stage1
+        FPC 1: fpc1
+     Strata 2: strata2
+         SU 2: stage2
+        FPC 2: fpc2
+*/
 
-	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
-	
-	*<_Nationally_representative_> 
-	gen national_level = 1
+		*<_Nationally_representative_> 
+	gen national_level = 0
 	*</_Nationally_representative_>
 	
 	*<_Nationally_representative_> 
-	gen nationally_representative = 1
+	gen nationally_representative = 0
 	*</_Nationally_representative_>
+
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 0
+	gen regionally_representative = 1
 	*<_Regionally_representative_>
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = weight
+    clonevar learner_weight  = wt_final
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_psu_>
-    clonevar su1  = idschool
+    *<_su1_>
+    encode stage1, gen(su1)  
     label var su1 "Primary sampling unit"
-    *</_learner_weight_>
+    *</_su1_>*/
 	
 	*<_strata1_>
-    clonevar strata1  = we_strata
     label var strata1 "Strata 1"
-    *</_learner_weight_>
+    *</_strata1_>
 	
 	*<_fpc1_>
     label var fpc1 "fpc 1"
-    *</_learner_weight_>
+    *</_fpc1_>*/
 
 	*<_su2_>
-	clonevar su2 = id
+	encode stage2, gen(su2)
     label var su2 "Sampling unit 2"
-    *</_learner_weight_>
+    *</_su2_>
 	
 	*<_strata2_>
-	clonevar strata2 = grade
     label var strata2 "Strata 2"
-    *</_learner_weight_>
+    *</_strata2_>*/
 
 	*<_fpc2_>
     label var fpc2 "fpc 2"
-    *</_learner_weight_>
+    *</_fpc2_>*/
 
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
@@ -294,8 +278,12 @@ set sortseed 10051990
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
+	
+	foreach l in su1 su2 {
+      label drop `l'
+    }
 
-	svyset su1 [pw=learner_weight],strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2) singleunit(scaled)
+	svyset su1 [pw=learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) vce(linearized) singleunit(scaled)
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
@@ -340,8 +328,9 @@ set sortseed 10051990
     // Update valuevars to include newly created harmonized vars (from the ado)
     local valuevars : list valuevars | resultvars
 	
+	*The original dataset should have all the variables - Currently it doesnot have
 		*<_language_test_> 
-	gen language_test = "English"
+	gen language_test = "hausa"
 	*<_language_test_>
 
 	

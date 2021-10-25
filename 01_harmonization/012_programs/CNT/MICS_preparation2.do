@@ -54,7 +54,7 @@ save "`j'/`j'_2017_MICS/`j'_2017_MICS_v01_M/Data/Stata/`j'_2017_MICS_v01_M", rep
 *Running do files
 *-------------------------------------------------------------------------------
 use "${clone}/01_harmonization/011_rawdata/master_countrycode_list.dta",  clear
-keep if assessment== "MICS"
+keep if assessment== "EGRA" & region=="WLD"
 
 levelsof countrycode, local(country)
 
@@ -70,7 +70,7 @@ display "`c'"
 	levelsof year, local(yr)
 		foreach y of local yr {
 		*display "`c'" "`y'"
-		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_MICS_v0_wrk_A_GLAD_ALL"
+		do "${clone}/01_harmonization\012_programs\CNT/`c'_`y'_EGRA_v01_M_wrk_A_GLAD_ALL"
 		}
 	restore
 	}	
@@ -146,13 +146,16 @@ svy: tab `var',se
 * number reading
 *number discrimination 
 gen math_discrim= 0 
-replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 
+replace math_discrim= 1 if fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 
+& fl24e==1 
 *number addition 
 gen math_addition= 0 
-replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1  
+replace math_addition= 1 if fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 
+& fl25e==1  
 *pattern recognition 
 gen math_recog= 0 
-replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1
+replace math_recog= 1 if fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 
+& fl27e==1
 *math foundational
 gen math_foun=0
 replace math_foun= 1 if  fl23a==1 & fl23b==1 & fl23c==1 & fl23d==1 & fl23e==1 & fl24a==1 & fl24b==1 & fl24c==1 & fl24d==1 & fl24e==1 &  fl25a==1 & fl25b==1 & fl25c==1 & fl25d==1 & fl25e==1 & fl27a==1 & fl27b==1 & fl27c==1 & fl27d==1 & fl27e==1 

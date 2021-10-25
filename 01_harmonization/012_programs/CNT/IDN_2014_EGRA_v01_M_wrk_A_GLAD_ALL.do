@@ -3,8 +3,8 @@
 * Project information at: https://github.com/worldbank/GLAD
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "GMB"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2013"  /* 2015 */
+local region      = "IDN"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2014"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -73,6 +73,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
+
 set seed 10051990
 set sortseed 10051990
 
@@ -81,18 +82,16 @@ set sortseed 10051990
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
-
-       // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
+	
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2014.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2013.dta", clear
+           use "`input_dir'/2014.dta", clear
          }
-         rename *, lower
+		rename *, lower
          compress
-         save "`temp_dir'/2013.dta", replace
+         save "`temp_dir'/2014.dta", replace
 		
 		
 
@@ -123,24 +122,27 @@ set sortseed 10051990
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idlearner"
+    local idvars "idcntry_raw idregion year idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "GMB"
+    gen idcntry_raw = "`region'"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    decode region, gen(idregion)
+    label var idregion "Region"
+    *</_idregion_>
+	
 	
 	*<_year_>
 	label var year "Year"
 	*</_year_>
 
-
-    *<_idschool_>
-	gen idschool = emis
-	replace idschool = emis_code if missing(idschool)
+   *<_idschool_> 
+	gen idschool = school_code
     label var idschool "School ID"
-    *</_idschool_>
-	
+    *<_idschool_> */
 	
     /*<_idclass_> - Information not available 
     label var idclass "Class ID"
@@ -161,27 +163,10 @@ set sortseed 10051990
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-    *foreach pv in 01 02 03 04 05 {
-	*Generating read_comp_score_pcnt: (Reading comprehension in Croele)
-	numlabel, add
-	*How do we know 2 and 3 are to be replaced with 0
-	foreach var of varlist read_comp_q1 read_comp_q2 read_comp_q3 read_comp_q4 read_comp_q5 {
-		tab `var' if year == 2016, m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,2,.) & year == 2016
-	}
-	foreach var of varlist  read_comp_quest1 read_comp_quest2 read_comp_quest3 read_comp_quest4 read_comp_quest5 {
-		tab `var', m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,.) & year == 2013
-	}
-	egen read_comp_score_2013 = rowtotal(read_comp_quest1_n read_comp_quest2_n read_comp_quest3_n read_comp_quest4_n read_comp_quest5_n), missing
-	egen read_comp_score_2016 = rowtotal(read_comp_q1_n read_comp_q2_n read_comp_q3_n read_comp_q4_n read_comp_q5_n), missing
-	gen read_comp_score = read_comp_score_2013
-	replace read_comp_score = read_comp_score_2016 if missing(read_comp_score)
-	gen read_comp_score_pcnt_n = (read_comp_score/5)*100
-	clonevar score_egra_read = read_comp_score_pcnt_n
-      label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
+	clonevar score_egra_read_i = i_read_comp_score_pcnt
+	clonevar score_egra_read_ilb = ilb_read_comp_score_pcnt
+    label var score_egra_read_i "Percentage of correct reading comprehension questions for `assessment' i "
+    label var score_egra_read_ilb "Percentage of correct reading comprehension questions for `assessment' ilb "
     *}
     *</_score_assessment_subject_pv_>
 
@@ -196,13 +181,11 @@ set sortseed 10051990
     // TRAIT Vars:
     local traitvars	"age male idgrade total"
 	
-		
 	*<_total_> 
 	gen total = 1 
 	label define total 1 "total"
 	label values total total
 	*<_total_> 
-	
 
     *<_age_>
     *clonevar age = std_age	
@@ -220,71 +203,81 @@ set sortseed 10051990
     *</_urban_o_>*/
 
     *<_male_>
-    gen byte male = std_gender
-	replace male = 1 if female == 0 & missing(male)
-	replace male = 0 if female == 1 & missing(male)
+    gen byte male = female
+	replace male = 1 if female == 0 
+	replace male = 0 if female == 1 
 	label define male 1 "male" 0 "female", replace
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 
-    *<_idgrade_> 
+	*<_idgrade_>
 	clonevar idgrade = grade
     label var idgrade "Grade ID"
     *</_idgrade_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2 national_level nationally_representative regionally_representative"
-	
-	*gen wt1=pw1*pw2
-
-	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
+    local samplevars "learner_weight strata1 su1 fpc1 strata2 su2 fpc2 su4 fpc4 strata4 national_level nationally_representative regionally_representative"
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
 	*</_Nationally_representative_>
 	
-	*<_Nationally_representative_> 
+		*<_Nationally_representative_> 
 	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 
-	gen regionally_representative = 0
+	gen regionally_representative = 1
 	*<_Regionally_representative_>
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = weight
+    clonevar learner_weight  = wt_stage4
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
     *<_psu_>
-    clonevar su1  = idschool
+    clonevar su1  = stage1
     label var su1 "Primary sampling unit"
-    *</_learner_weight_>
+    *</_psu_>
 	
 	*<_strata1_>
-    clonevar strata1  = we_strata
+   * clonevar strata1  = strat1
     label var strata1 "Strata 1"
-    *</_learner_weight_>
+    *</_strata1_> */
 	
 	*<_fpc1_>
     label var fpc1 "fpc 1"
-    *</_learner_weight_>
+    *</_fpc1_>
 
 	*<_su2_>
-	clonevar su2 = id
+	clonevar su2 = stage2
     label var su2 "Sampling unit 2"
-    *</_learner_weight_>
+    *</_su2_>
 	
 	*<_strata2_>
-	clonevar strata2 = grade
+	*clonevar strata2 = strat2
     label var strata2 "Strata 2"
-    *</_learner_weight_>
+    *</_strata2_> */
 
 	*<_fpc2_>
     label var fpc2 "fpc 2"
+    *</_fpc2_>
+	
+	*<_su4_>
+	clonevar su4 = stage4
+    label var su4 "Sampling unit 4"
+    *</_su4_>
+	
+	*<_strata4_>
+	*clonevar strata2 = strat2
+    label var strata4 "Strata 4"
+    *</_strata2_> */
+
+	*<_fpc4_>
+    label var fpc4 "fpc 4"
     *</_learner_weight_>
 
     /*<_jkzone_>
@@ -294,9 +287,7 @@ set sortseed 10051990
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-
-	svyset su1 [pw=learner_weight],strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2) singleunit(scaled)
-
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1) || su2, fpc(fpc2) strata(strata2) || su4, fpc(fpc4) strata(strata4) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -340,8 +331,8 @@ set sortseed 10051990
     // Update valuevars to include newly created harmonized vars (from the ado)
     local valuevars : list valuevars | resultvars
 	
-		*<_language_test_> 
-	gen language_test = "English"
+	*<_language_test_> 
+	gen language_test = "Bhasa Indonesia"
 	*<_language_test_>
 
 	

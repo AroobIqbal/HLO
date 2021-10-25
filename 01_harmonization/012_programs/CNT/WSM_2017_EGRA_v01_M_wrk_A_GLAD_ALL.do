@@ -79,7 +79,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
        but other asssessments only need to loop over prefix (such as LLECE).
        See the two examples below and change according to your needs */
 
-
+set seed 10051990
+set sortseed 10051990
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
@@ -186,7 +187,13 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
+    local traitvars	"age male total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_>
 
     *<_age_>
     *clonevar age = std_age	
@@ -210,14 +217,18 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight "
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
 	*gen wt1=pw1*pw2
 
 	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
 	
-		*<_Nationally_representative_> 
+	*<_Nationally_representative_> 
 	gen national_level = 1
+	*</_Nationally_representative_>
+	
+	*<_Nationally_representative_> 
+	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 
@@ -238,6 +249,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 5th Nov, 2019"  /* chan
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
 
+	svyset [pweight= learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

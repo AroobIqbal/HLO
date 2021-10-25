@@ -21,7 +21,7 @@ local dofile_info = "last modified by Diana Goldemberg in October 8, 2019"
 * 5) Bring WB countrycode & harmonization thresholds, and save dtas
 *=========================================================================*
 
-quietly {
+*quietly {
 
   *---------------------------------------------------------------------------
   * 0) Program setup (identical for all assessments)
@@ -243,4 +243,4 @@ quietly {
     // Still loads it, to generate documentation
     use "`output_dir'/`output_file'.dta", clear
   }
-}
+*}

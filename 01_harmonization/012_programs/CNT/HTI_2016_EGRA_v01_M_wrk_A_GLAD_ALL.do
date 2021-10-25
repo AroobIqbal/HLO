@@ -73,7 +73,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -212,8 +213,14 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
 
     // TRAIT Vars:
-    local traitvars	"age male"
-
+    local traitvars	"age male total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
+	
     *<_age_>
     clonevar age = el15		
     label var age "Learner age at time of assessment"
@@ -237,10 +244,14 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight"
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
+	
+	*<_National level_> 
+	gen national_level = 1
+	*</_National level_>
 	
 	*<_Nationally_representative_> 
-	gen national_level = 1
+	gen nationally_representative = 1
 	*</_Nationally_representative_>
 	
 	*<_Regionally_representative_> 
@@ -260,7 +271,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 4th Nov, 2019"  /* chan
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-
+	svyset [pweight = learner_weight]
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 

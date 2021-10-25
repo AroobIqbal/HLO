@@ -4,7 +4,7 @@
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
 local region      = "GMB"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2013"  /* 2015 */
+local year        = "2011"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
@@ -76,6 +76,7 @@ local dofile_info = "last modified by Katharina Ziegler 12.7.2021"  /* change da
 set seed 10051990
 set sortseed 10051990
 
+
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -88,11 +89,12 @@ set sortseed 10051990
            noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
          }
          else {
-           use "`input_dir'/2013.dta", clear
+           use "`input_dir'/2011.dta", clear
          }
-         rename *, lower
+        drop t_q20_other
+		rename *, lower
          compress
-         save "`temp_dir'/2013.dta", replace
+         save "`temp_dir'/2011.dta", replace
 		
 		
 
@@ -123,12 +125,17 @@ set sortseed 10051990
     // The generation of variables was commented out and should be replaced as needed
 
     // ID Vars:
-    local idvars "idcntry_raw year idschool idlearner"
+    local idvars "idcntry_raw idregion year idschool idlearner"
 
     *<_idcntry_raw_>
     gen idcntry_raw = "GMB"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
+	
+	*<_idregion_>
+    decode region, gen(idregion)
+    label var idregion "Region"
+    *</_idregion_>
 	
 	*<_year_>
 	label var year "Year"
@@ -136,8 +143,7 @@ set sortseed 10051990
 
 
     *<_idschool_>
-	gen idschool = emis
-	replace idschool = emis_code if missing(idschool)
+	gen idschool = school_code
     label var idschool "School ID"
     *</_idschool_>
 	
@@ -161,26 +167,7 @@ set sortseed 10051990
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
-    *foreach pv in 01 02 03 04 05 {
-	*Generating read_comp_score_pcnt: (Reading comprehension in Croele)
-	numlabel, add
-	*How do we know 2 and 3 are to be replaced with 0
-	foreach var of varlist read_comp_q1 read_comp_q2 read_comp_q3 read_comp_q4 read_comp_q5 {
-		tab `var' if year == 2016, m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,2,.) & year == 2016
-	}
-	foreach var of varlist  read_comp_quest1 read_comp_quest2 read_comp_quest3 read_comp_quest4 read_comp_quest5 {
-		tab `var', m
-		clonevar `var'_n = `var'
-		replace `var'_n = 0 if inlist(`var'_n,3,.) & year == 2013
-	}
-	egen read_comp_score_2013 = rowtotal(read_comp_quest1_n read_comp_quest2_n read_comp_quest3_n read_comp_quest4_n read_comp_quest5_n), missing
-	egen read_comp_score_2016 = rowtotal(read_comp_q1_n read_comp_q2_n read_comp_q3_n read_comp_q4_n read_comp_q5_n), missing
-	gen read_comp_score = read_comp_score_2013
-	replace read_comp_score = read_comp_score_2016 if missing(read_comp_score)
-	gen read_comp_score_pcnt_n = (read_comp_score/5)*100
-	clonevar score_egra_read = read_comp_score_pcnt_n
+	gen score_egra_read = read_comp_score_pcnt*100
       label var score_egra_read "Percentage of correct reading comprehension questions for `assessment'"
     *}
     *</_score_assessment_subject_pv_>
@@ -194,15 +181,13 @@ set sortseed 10051990
 
 
     // TRAIT Vars:
-    local traitvars	"age male idgrade total"
+    local traitvars	"age male idgrade total escs"
 	
-		
 	*<_total_> 
 	gen total = 1 
 	label define total 1 "total"
 	label values total total
 	*<_total_> 
-	
 
     *<_age_>
     *clonevar age = std_age	
@@ -220,15 +205,15 @@ set sortseed 10051990
     *</_urban_o_>*/
 
     *<_male_>
-    gen byte male = std_gender
-	replace male = 1 if female == 0 & missing(male)
-	replace male = 0 if female == 1 & missing(male)
+    gen byte male = female
+	replace male = 1 if female == 0 
+	replace male = 0 if female == 1 
 	label define male 1 "male" 0 "female", replace
 	label val male male
     label var male "Learner gender is male/female"
     *</_male_>
 
-    *<_idgrade_> 
+    *<_idgrade_> - From report
 	clonevar idgrade = grade
     label var idgrade "Grade ID"
     *</_idgrade_>
@@ -236,10 +221,6 @@ set sortseed 10051990
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2 national_level nationally_representative regionally_representative"
-	
-	*gen wt1=pw1*pw2
-
-	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
 	
 	*<_Nationally_representative_> 
 	gen national_level = 1
@@ -255,7 +236,7 @@ set sortseed 10051990
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = weight
+    clonevar learner_weight  = wt_final
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
@@ -265,7 +246,7 @@ set sortseed 10051990
     *</_learner_weight_>
 	
 	*<_strata1_>
-    clonevar strata1  = we_strata
+    clonevar strata1  = strat1
     label var strata1 "Strata 1"
     *</_learner_weight_>
 	
@@ -279,7 +260,7 @@ set sortseed 10051990
     *</_learner_weight_>
 	
 	*<_strata2_>
-	clonevar strata2 = grade
+	clonevar strata2 = strat2
     label var strata2 "Strata 2"
     *</_learner_weight_>
 
@@ -294,9 +275,7 @@ set sortseed 10051990
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-
-	svyset su1 [pw=learner_weight],strata(strata1) fpc(fpc1) ||su2, strata(strata2) fpc(fpc2) singleunit(scaled)
-
+	svyset su1 [pweight = learner_weight], fpc(fpc1) strata(strata1)  || su2, fpc(fpc2) strata(strata2) singleunit(scaled) vce(linearized)
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
 
 
@@ -306,10 +285,28 @@ set sortseed 10051990
 
     // Placeholder for other operations that we may want to include (kept in ALL-BASE)
     *<_escs_>
-	*ESCS variables avaialble
-	*Develop code for ESCS
-    * code for ESCS
-    * label for ESCS
+foreach var of varlist exit_interview26  exit_interview28 exit_interview29 exit_interview30 exit_interview31 exit_interview32 exit_interview33 exit_interview34 exit_interview35 exit_interview36 exit_interview37 exit_interview38 exit_interview39 {
+	tab `var'
+	*Missing are given by 2,9,27 and 6
+	replace `var' = . if inlist(`var',2,9,27,6)
+}
+mdesc exit_interview26  exit_interview28 exit_interview29 exit_interview30 exit_interview31 exit_interview32 exit_interview33 exit_interview34 exit_interview35 exit_interview36 exit_interview37 exit_interview38 exit_interview39
+*Filling in missing values:
+foreach var of varlist exit_interview26 exit_interview28 exit_interview29 exit_interview30 exit_interview31 exit_interview32 exit_interview33 exit_interview34 exit_interview35 exit_interview36 exit_interview37 exit_interview38 exit_interview39 {
+	bysort region school_code: egen `var'_mean = mean(`var')
+	bysort region school_code: egen `var'_count = count(`var')
+	bysort region : egen `var'_mean_reg = mean(`var')
+	bysort region : egen `var'_count_reg = count(`var')
+	egen `var'_mean_cnt = mean(`var')
+	replace `var' = `var'_mean if missing(`var') & `var'_count > 5 & !missing(`var'_count)
+	replace `var' = `var'_mean_reg if missing(`var') & `var'_count_reg > 10 & !missing(`var'_count_reg)
+	replace `var' = `var'_mean_cnt if missing(`var') 
+	egen `var'_std = std(`var')
+}
+alphawgt exit_interview26_std exit_interview28_std exit_interview29_std exit_interview30_std exit_interview31_std exit_interview32_std exit_interview33_std exit_interview34_std exit_interview35_std exit_interview36_std exit_interview37_std exit_interview38_std exit_interview39_std [weight = wt_final], detail item std
+pca exit_interview26_std exit_interview28_std exit_interview29_std exit_interview30_std exit_interview31_std exit_interview32_std exit_interview33_std exit_interview34_std exit_interview35_std exit_interview36_std exit_interview37_std exit_interview38_std exit_interview39_std [weight = wt_final]
+predict escs
+label var escs "Predicted ESCS"
     *</_escs_>
 
     noi disp as res "{phang}Step 4 completed (`output_file'){p_end}"
@@ -341,7 +338,7 @@ set sortseed 10051990
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = "English"
+	gen language_test = language
 	*<_language_test_>
 
 	

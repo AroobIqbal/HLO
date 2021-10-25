@@ -1,17 +1,16 @@
 *=========================================================================*
 * GLOBAL LEARNING ASSESSMENT DATABASE (GLAD)
 * Project information at: https://github.com/worldbank/GLAD
-*This file needs to be worked on: waiting for response from Mar
 *
 * Metadata to be stored as 'char' in the resulting dataset (do NOT use ";" here)
-local region      = "SLV"   /* LAC, SSA, WLD or CNT such as KHM RWA */
-local year        = "2018"  /* 2015 */
+local region      = "TUV"   /* LAC, SSA, WLD or CNT such as KHM RWA */
+local year        = "2016"  /* 2015 */
 local assessment  = "EGRA" /* PIRLS, PISA, EGRA, etc */
 local master      = "v01_M" /* usually v01_M, unless the master (eduraw) was updated*/
 local adaptation  = "wrk_A_GLAD" /* no need to change here */
 local module      = "ALL"  /* for now, we are only generating ALL and ALL-BASE in GLAD */
 local ttl_info    = "Joao Pedro de Azevedo [eduanalytics@worldbank.org]" /* no need to change here */
-local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /* change date*/
+local dofile_info = "last modified by Syedah Aroob Iqbal 7th Feb, 2019"  /* change date*/
 *
 * Steps:
 * 0) Program setup (identical for all assessments)
@@ -74,7 +73,8 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     *---------------------------------------------------------------------------
     * 1) Open all rawdata, lower case vars, save in temp_dir
     *---------------------------------------------------------------------------
-
+set seed 10051990
+set sortseed 10051990
     /* NOTE: Some assessments will loop over `prefix'`cnt' (such as PIRLS, TIMSS),
        then create a temp file with all prefixs of a cnt merged.
        but other asssessments only need to loop over prefix (such as LLECE).
@@ -84,14 +84,14 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
        // Temporary copies of the 4 rawdatasets needed for each country (new section)	*Only Croele data included: 
          if `from_datalibweb'==1 {
-           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2013.dta) `shortcut')
+           noi edukit_datalibweb, d(country(`region') year(`year') type(EDURAW) surveyid(`surveyid') filename(2016.dta) `shortcut')
          }
          else {
-           use "`input_dir'/PUF_3.El-Salvador2018-National_grade2-3_EGRA-SSME_Spanish.dta", clear
+           use "`input_dir'/2016.dta", clear
          }
          rename *, lower
          compress
-         save "`temp_dir'/PUF_3.El-Salvador2018-National_grade2-3_EGRA-SSME_Spanish.dta", replace
+         save "`temp_dir'/2016.dta", replace
 		
 		
 
@@ -109,7 +109,6 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 	   *Just one file
     noi disp as res "{phang}Step 2 completed (`output_file'){p_end}"
 
-
     *---------------------------------------------------------------------------
     * 3) Standardize variable names across all assessments
     *---------------------------------------------------------------------------
@@ -125,7 +124,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     local idvars "idcntry_raw year idschool idgrade idlearner"
 
     *<_idcntry_raw_>
-    gen idcntry_raw = "SLV"
+    gen idcntry_raw = "TUV"
     label var idcntry_raw "Country ID, as coded in rawdata"
     *</_idcntry_raw_>
 	
@@ -135,7 +134,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
 
     *<_idschool_>
-	encode school_code, gen (idschool)
+	encode school, gen(idschool)
     label var idschool "School ID"
     *</_idschool_>
 
@@ -149,21 +148,37 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     *</_idclass_>*/
 
     *<_idlearner_>
-	encode id, gen (idlearner)
+	encode id, gen(idlearner)
     label var idlearner "Learner ID"
     *</_idlearner_>
 
-    /* Drop any value labels of idvars, to be okay to append multiple surveys
+    /*Drop any value labels of idvars, to be okay to append multiple surveys
     foreach var of local idvars {
       label values `var' .
-    }*/
-
+    }
+*/
 
     // VALUE Vars: 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
     local valuevars	"score_egra* "
 
     *<_score_assessment_subject_pv_>
     *foreach pv in 01 02 03 04 05 {
+	*Generating read_comp_score_pcnt: (Reading comprehension in Croele)
+	numlabel, add
+	foreach var of varlist read_comp1 read_comp2 read_comp3 read_comp4 read_comp5 {
+		tab `var' , m
+		clonevar `var'_c = `var'
+	}
+	replace read_comp1_c = 0 if inlist(read_comp1_c,3,.)
+	foreach var of varlist read_comp2_c read_comp3_c read_comp4_c read_comp5_c {
+		replace `var' = "0" if inlist(`var',"3","notAsked","")
+		destring `var', replace
+	}
+	foreach var of varlist read_comp1_c read_comp2_c read_comp3_c read_comp4_c read_comp5_c {
+	tab `var', m
+	}
+	egen read_comp_score = rowtotal(read_comp1_c read_comp2_c read_comp3_c read_comp4_c read_comp5_c), missing
+	gen read_comp_score_pcnt = (read_comp_score/5)*100
 	clonevar score_egra_read = read_comp_score_pcnt
       label var score_egra_read "Plausible value `pv': `assessment' score for reading"
     *}
@@ -178,12 +193,18 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
 
     // TRAIT Vars:
-    local traitvars	"male"
+    local traitvars	"age male total"
+	
+	*<_total_> 
+	gen total = 1 
+	label define total 1 "total"
+	label values total total
+	*<_total_> 
 
-    /*<_age_> -Not available
+    *<_age_>
     *clonevar age = std_age	
     label var age "Learner age at time of assessment"
-    *</_age_>*/
+    *</_age_>
 
     /*<_urban_> - Urban not available
     *gen byte urban = (inlist(acbg05a, 1, 2, 3, 4, 5)) if !missing(acbg05a) & acbg05a != 9
@@ -196,24 +217,22 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     *</_urban_o_>*/
 
     *<_male_>
-    gen byte male = (female == 0) 
-	label define male 1 "male" 0 "female"
+    gen byte male = (female == 0)
     label var male "Learner gender is male/female"
-	label values male male
     *</_male_>
 
 
     // SAMPLE Vars:		 	  /* CHANGE HERE FOR YOUR ASSESSMENT!!! PIRLS EXAMPLE */
-    local samplevars "learner_weight su1 strata1 fpc1 su2 strata2 fpc2 su3 strata3 fpc3 national_level nationally_representative regionally_representative"
-		
-	*<_Nationally_representative_> 
-	gen national_level = 1
-	*</_Nationally_representative_>
+    local samplevars "learner_weight national_level nationally_representative regionally_representative"
 	
-	*<_Nationally_representative_> 
+	*gen wt1=pw1*pw2
+
+	*svyset emis_code [pw=wt1],strata(we_strata)fpc(fpc1) ||id,strata(grade) fpc(fpc2) - Weight information obtained from program files obtained from Ryoko
+	
+		*<_Nationally_representative_> 
+	gen national_level = 1
 	gen nationally_representative = 1
 	*</_Nationally_representative_>
-
 	
 	*<_Regionally_representative_> 
 	gen regionally_representative = 0
@@ -221,49 +240,10 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
 
 
     *<_learner_weight_>
-    clonevar learner_weight  = wt_stage3
+    gen learner_weight  = 1
     label var learner_weight "Total learner weight"
     *</_learner_weight_>
 	
-    *<_su1_>
-    encode stage1, gen(su1)
-    label var su1 "Sampling unit 1"
-    *</_su1_>
-	
-	*<_strata1_>
-    label var strata1 "Strata 1"
-    *</_strata1_>
-	
-	*<_fpc1_>
-    label var fpc1 "fpc 1"
-    *</_fpc1_>*/
-
-	*<_su2_>
-	encode stage2, gen(su2)
-    label var su2 "Sampling unit 2"
-    *</_su2_>
-	
-	*<_strata2_>
-    label var strata2 "Strata 2"
-    *</_strata2_>
-
-	*<_fpc2_>
-    label var fpc2 "fpc 2"
-    *</_fpc2_>*/
-	
-	*<_su3_>
-	encode stage3, gen(su3)
-    label var su3 "Sampling unit 3"
-    *</_su2_>
-	
-	*<_strata3_>
-    label var strata3 "Strata 3"
-    *</_learner_weight_>
-
-	*<_fpc3_>
-    label var fpc3 "fpc 3"
-    *</_learner_weight_>*/
-
     /*<_jkzone_>
     label var jkzone "Jackknife zone"
     *</_jkzone_>
@@ -271,10 +251,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     *<_jkrep_>
     label var jkrep "Jackknife replicate code"
     *</_jkrep_>*/
-
-	foreach var of local samplevars {
-      label values `var' .
-    }
+	svyset [pweight= learner_weight]
 
 
     noi disp as res "{phang}Step 3 completed (`output_file'){p_end}"
@@ -321,7 +298,7 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     local valuevars : list valuevars | resultvars
 	
 		*<_language_test_> 
-	gen language_test = "Spanish"
+	gen language_test = "Tuvaluan"
 	*<_language_test_>
 
 	
@@ -335,7 +312,6 @@ local dofile_info = "last modified by Syedah Aroob Iqbal 18th February, 2020"  /
     edukit_save,  filename("`output_file'") path("`output_dir'") dir2delete("`temp_dir'")              ///
                 idvars("`idvars'") varc("key `keyvars'; value `valuevars'; trait `traitvars'; sample `samplevars'") ///
                 metadata("`metadata'") collection("GLAD")
-				
 *Results close but not exactly matching yet
  /* }
 
